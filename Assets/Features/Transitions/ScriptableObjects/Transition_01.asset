@@ -14,6 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entryVideo: {fileID: 32900000, guid: 243f5b6b84c60d94f97eb043cd9bea70, type: 3}
   exitVideo: {fileID: 32900000, guid: 5e7d12229a16926419682bdcabe7d6ef, type: 3}
+  entrySound: {fileID: 8300000, guid: 58c269e8cc0d9d44893b4ed3cfeaf908, type: 3}
+  exitSound: {fileID: 8300000, guid: b5f47f744b0b2f746a8de85b2a112ccf, type: 3}
+  soundVolume: 1
   loadingBarProfile: {fileID: 11400000, guid: d6e5fdcd260c92041830473fa42e6112, type: 2}
   backgroundColor: {r: 0.34509805, g: 0.74509805, b: 0.9960785, a: 1}
   minTransitionDuration: 1

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Features.LoadingBar;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -19,6 +20,8 @@ namespace Features.Transitions
         [SerializeField] private VideoPlayer videoPlayer;
         [SerializeField] private RawImage videoDisplay;
 
+        [Header("Audio")] [SerializeField] private AudioSource audioSource;
+
         [Header("Loading Bar")] [SerializeField]
         private MonoBehaviour loadingBarComponent;
 
@@ -33,6 +36,12 @@ namespace Features.Transitions
             if (loadingBar == null && loadingBarComponent != null)
             {
                 Debug.LogError("Loading bar component doesn't implement ILoadingBar interface!");
+            }
+
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+                audioSource.playOnAwake = false;
             }
         }
 
@@ -108,15 +117,17 @@ namespace Features.Transitions
 
             transitionCanvas.gameObject.SetActive(true);
             yield return null;
-
+            
+            PlayTransitionSound(currentTransition.entrySound);
+            
             var videoCoroutine = StartCoroutine(PlayVideoWithLastFrame(currentTransition.entryVideo, true));
             var loadingTimerCoroutine = StartCoroutine(ShowLoadingAfterDelay(currentTransition.showLoadingDelay));
-
+            
             yield return videoCoroutine;
-
+            
             if (loadingTimerCoroutine != null)
                 StopCoroutine(loadingTimerCoroutine);
-
+            
             if (!loadingScreenVisible)
             {
                 ShowLoadingScreen();
@@ -168,18 +179,28 @@ namespace Features.Transitions
                 HideLoadingScreen();
                 yield break;
             }
-
+            
+            PlayTransitionSound(currentTransition.exitSound);
+            
             var videoCoroutine = StartCoroutine(PlayVideoWithLastFrame(currentTransition.exitVideo, false));
             var hideTimerCoroutine = StartCoroutine(HideLoadingAfterDelay(currentTransition.hideLoadingBeforeEnd));
-
+            
             yield return videoCoroutine;
-
+            
             if (hideTimerCoroutine != null)
                 StopCoroutine(hideTimerCoroutine);
-
+            
             if (loadingScreenVisible)
             {
                 HideLoadingScreen();
+            }
+        }
+
+        private void PlayTransitionSound(AudioClip clip)
+        {
+            if (clip != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(clip, currentTransition.soundVolume);
             }
         }
 
@@ -236,8 +257,10 @@ namespace Features.Transitions
             RenderTexture currentRT = RenderTexture.active;
             RenderTexture.active = videoPlayer.targetTexture;
 
-            Texture2D lastFrameTexture2D = new Texture2D(videoPlayer.targetTexture.width, videoPlayer.targetTexture.height);
-            lastFrameTexture2D.ReadPixels(new Rect(0, 0, videoPlayer.targetTexture.width, videoPlayer.targetTexture.height),
+            Texture2D lastFrameTexture2D =
+                new Texture2D(videoPlayer.targetTexture.width, videoPlayer.targetTexture.height);
+            lastFrameTexture2D.ReadPixels(
+                new Rect(0, 0, videoPlayer.targetTexture.width, videoPlayer.targetTexture.height),
                 0, 0);
             lastFrameTexture2D.Apply();
 

@@ -484,6 +484,7 @@ GameObject:
   - component: {fileID: 1892366905}
   - component: {fileID: 1892366904}
   - component: {fileID: 1892366908}
+  - component: {fileID: 1892366909}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -593,7 +594,25 @@ MonoBehaviour:
   backgroundPanel: {fileID: 223312503}
   videoPlayer: {fileID: 1581512911}
   videoDisplay: {fileID: 1041662710}
+  audioSource: {fileID: 0}
   loadingBarComponent: {fileID: 7112999583674550806}
+--- !u!114 &1892366909
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1892366903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e43f1a3e5f394a5986410904a4bedfea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultCursor: {fileID: 2800000, guid: 664dbbec5a961974eb5748f3fd80a921, type: 3}
+  defaultHotspot: {x: 4, y: 4}
+  pointerCursor: {fileID: 2800000, guid: c2613041f5a493b40ab83e164638364d, type: 3}
+  pointerHotspot: {x: 14, y: 4}
+  fixedCursorSize: {x: 32, y: 32}
 --- !u!114 &393442469988492080
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1245,9 +1264,14 @@ MonoBehaviour:
   canvasGroup: {fileID: 7616225814965849402}
   containerTransform: {fileID: 4709285361506480650}
   progressBar: {fileID: 5060347700275734566}
-  fillImage: {fileID: 0}
+  fillImage: {fileID: 8739599426212982873}
   percentageText: {fileID: 393442469988492080}
   backgroundImage: {fileID: 223312503}
+  entrySound: {fileID: 8300000, guid: 40a54be57aa0eba40805634cab965cdd, type: 3}
+  progressSound: {fileID: 0}
+  successSound: {fileID: 8300000, guid: 2714abb2fc71f4843a53f4ca91c17310, type: 3}
+  exitSound: {fileID: 0}
+  soundVolume: 1
 --- !u!224 &7371820818350673634
 RectTransform:
   m_ObjectHideFlags: 0
