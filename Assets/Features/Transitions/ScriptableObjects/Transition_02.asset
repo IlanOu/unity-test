@@ -12,9 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a22a51a3e79a02b448079127dbf7575d, type: 3}
   m_Name: Transition_02
   m_EditorClassIdentifier: 
-  entryVideo: {fileID: 0}
-  exitVideo: {fileID: 0}
-  keepLastFrameForLoading: 0
-  backgroundColor: {r: 0, g: 0, b: 0, a: 1}
+  entryVideo: {fileID: 32900000, guid: cd195bb2f5ef0fb47adf0f303dc2c430, type: 3}
+  exitVideo: {fileID: 32900000, guid: 980d3a65d19d362439b6e4a7757399ff, type: 3}
+  loadingBarProfile: {fileID: 11400000, guid: d6e5fdcd260c92041830473fa42e6112, type: 2}
+  backgroundColor: {r: 0.9960785, g: 0.28627452, b: 0.7607844, a: 1}
   minTransitionDuration: 1
   maxTransitionDuration: 3
+  showLoadingDelay: 2
+  hideLoadingBeforeEnd: 2
+  useLoadingBarEntryAnimation: 1
+  useLoadingBarExitAnimation: 1
+  keepLastFrameForLoading: 1

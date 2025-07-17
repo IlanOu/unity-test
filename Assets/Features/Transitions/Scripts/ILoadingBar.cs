@@ -1,9 +1,14 @@
-using UnityEngine;
+using System;
+using Features.LoadingBar;
 
-public interface ILoadingBar
+namespace Features.Transitions
 {
-    void Show();
-    void Hide();
-    void UpdateProgress(float progress);
-    void SetPosition(Vector3 position);
+    public interface ILoadingBar
+    {
+        void StartLoading(float duration, LoadingAnimationProfile profile, Action onComplete);
+        void StartLoading(float duration, LoadingAnimationProfile profile, bool useEntryAnimation, bool useExitAnimation, Action onComplete);
+        void ShowInstantly();
+        void HideInstantly();
+        void Hide();
+    }
 }

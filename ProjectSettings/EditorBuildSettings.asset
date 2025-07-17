@@ -11,6 +11,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SampleScene 1.unity
     guid: a4781bb67a7154a46ad0948733b14b3b
+  - enabled: 1
+    path: Assets/Scenes/TransitionScene.unity
+    guid: 7f91fee935e3f084a839ef252b548ee2
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
   m_UseUCBPForAssetBundles: 0

@@ -1,35 +1,66 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class TransitionButton : MonoBehaviour
+namespace Features.Transitions
 {
-    [SerializeField] private string targetSceneName;
-    [SerializeField] private Button button;
-    
-    private void Start()
+    public class TransitionButton : MonoBehaviour
     {
-        if (button == null)
+        [Header("Configuration")]
+        [SerializeField] private string targetSceneName;
+    
+        [Header("Settings")]
+        [SerializeField] private float buttonCooldown = 2f;
+    
+        private Button button;
+    
+        private void Awake()
+        {
             button = GetComponent<Button>();
+            if (button == null)
+            {
+                Debug.LogError("TransitionButton requires a Button component!", this);
+            }
+        }
+
+        private void OnValidate()
+        {
+            if (string.IsNullOrEmpty(targetSceneName))
+            {
+                Debug.LogWarning("Target scene name is not set!", this);
+            }
+        }
+
+        private void OnEnable()
+        {
+            button?.onClick.AddListener(OnButtonClick);
+        }
+
+        private void OnDisable()
+        {
+            button?.onClick.RemoveListener(OnButtonClick);
+        }
+    
+        private void OnButtonClick()
+        {
+            if (string.IsNullOrEmpty(targetSceneName))
+            {
+                Debug.LogError("Target scene name is not set!", this);
+                return;
+            }
+
+            if (button != null) // Désactive le bouton pour éviter le spam
+            {
+                button.interactable = false; 
+                Invoke(nameof(ReEnableButton), buttonCooldown);
+            }
         
-        if (button != null)
-            button.onClick.AddListener(OnButtonClick);
-    }
-    
-    private void OnButtonClick()
-    {
-        if (SceneTransitionManager.Instance != null)
-        {
-            SceneTransitionManager.Instance.TransitionToScene(targetSceneName);
+            TransitionManager.TransitionToScene(targetSceneName);
         }
-        else
-        {
-            Debug.LogError("SceneTransitionManager non trouvé!");
-        }
-    }
     
-    private void OnDestroy()
-    {
-        if (button != null)
-            button.onClick.RemoveListener(OnButtonClick);
+        private void ReEnableButton()
+        {
+            if (button != null)
+                button.interactable = true;
+        }
     }
 }
