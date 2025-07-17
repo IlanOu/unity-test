@@ -1,13 +1,14 @@
 using Features.LoadingBar;
 using UnityEngine;
-using UnityEngine.Video;
 
 [CreateAssetMenu(fileName = "TransitionData", menuName = "Transitions/Transition Data")]
 public class TransitionData : ScriptableObject
 {
-    [Header("Vidéos de transition")]
-    public VideoClip entryVideo;
-    public VideoClip exitVideo;
+    [Header("Vidéos de transition (dans StreamingAssets/Videos/)")]
+    [Tooltip("Nom du fichier vidéo d'entrée (ex: transition_01_start.webm)")]
+    public string entryVideoFileName;
+    [Tooltip("Nom du fichier vidéo de sortie (ex: transition_01_end.webm)")]
+    public string exitVideoFileName;
     
     [Header("Audio")]
     [Tooltip("Son joué au début de la vidéo start")]
@@ -30,19 +31,13 @@ public class TransitionData : ScriptableObject
     public float maxTransitionDuration = 3f;
     
     [Header("Loading Screen Timing")]
-    [Tooltip("Temps après le début de la vidéo start pour afficher le loading")]
     [Range(0f, 10f)]
     public float showLoadingDelay = 2f;
-    
-    [Tooltip("Temps avant la fin de la vidéo end pour cacher le loading")]
     [Range(0f, 10f)]
     public float hideLoadingBeforeEnd = 2f;
 
     [Header("Loading Bar Animations")]
-    [Tooltip("Anime l'apparition de la loading bar")]
     public bool useLoadingBarEntryAnimation = true;
-    
-    [Tooltip("Anime la disparition de la loading bar")]
     public bool useLoadingBarExitAnimation = true;
 
     [Header("Advanced")]
@@ -53,11 +48,5 @@ public class TransitionData : ScriptableObject
     {
         if (loadingBarProfile == null)
             Debug.LogWarning("LoadingBarProfile is not assigned!", this);
-        
-        if (entryVideo != null && showLoadingDelay > entryVideo.length)
-            Debug.LogWarning("Show loading delay is longer than entry video duration!", this);
-        
-        if (exitVideo != null && hideLoadingBeforeEnd > exitVideo.length)
-            Debug.LogWarning("Hide loading delay is longer than exit video duration!", this);
     }
 }

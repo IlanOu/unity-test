@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a22a51a3e79a02b448079127dbf7575d, type: 3}
   m_Name: Transition_03
   m_EditorClassIdentifier: 
-  entryVideo: {fileID: 32900000, guid: 4436fa84d45266e4fbf4ab3e37708fab, type: 3}
-  exitVideo: {fileID: 32900000, guid: 7f822d1078704d547aec15fb08bfbf6f, type: 3}
+  entryVideoFileName: Transition_03_start_transparent.webm
+  exitVideoFileName: Transition_03_end_transparent.webm
   entrySound: {fileID: 8300000, guid: d10488f0ba96fcf498da76c8e5f1a933, type: 3}
   exitSound: {fileID: 8300000, guid: ccd784e5e90883549bcee708b9691ed7, type: 3}
   soundVolume: 1

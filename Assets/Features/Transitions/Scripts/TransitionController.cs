@@ -113,14 +113,14 @@ namespace Features.Transitions
 
         private IEnumerator PlayEntryVideoWithLoading()
         {
-            if (currentTransition.entryVideo == null) yield break;
+            if (string.IsNullOrEmpty(currentTransition.entryVideoFileName)) yield break;
 
             transitionCanvas.gameObject.SetActive(true);
             yield return null;
             
             PlayTransitionSound(currentTransition.entrySound);
             
-            var videoCoroutine = StartCoroutine(PlayVideoWithLastFrame(currentTransition.entryVideo, true));
+            var videoCoroutine = StartCoroutine(PlayVideoWithLastFrame(true));
             var loadingTimerCoroutine = StartCoroutine(ShowLoadingAfterDelay(currentTransition.showLoadingDelay));
             
             yield return videoCoroutine;
@@ -174,7 +174,7 @@ namespace Features.Transitions
 
         private IEnumerator PlayExitVideoWithLoading()
         {
-            if (currentTransition.exitVideo == null)
+            if (string.IsNullOrEmpty(currentTransition.exitVideoFileName))
             {
                 HideLoadingScreen();
                 yield break;
@@ -182,7 +182,7 @@ namespace Features.Transitions
             
             PlayTransitionSound(currentTransition.exitSound);
             
-            var videoCoroutine = StartCoroutine(PlayVideoWithLastFrame(currentTransition.exitVideo, false));
+            var videoCoroutine = StartCoroutine(PlayVideoWithLastFrame(false));
             var hideTimerCoroutine = StartCoroutine(HideLoadingAfterDelay(currentTransition.hideLoadingBeforeEnd));
             
             yield return videoCoroutine;
@@ -206,8 +206,8 @@ namespace Features.Transitions
 
         private IEnumerator HideLoadingAfterDelay(float delayFromEnd)
         {
-            float videoDuration = (float)currentTransition.exitVideo.length;
-            float waitTime = videoDuration - delayFromEnd;
+            float estimatedVideoDuration = 3f;
+            float waitTime = estimatedVideoDuration - delayFromEnd;
 
             if (waitTime > 0)
             {
@@ -220,33 +220,58 @@ namespace Features.Transitions
             }
         }
 
-        private IEnumerator PlayVideoWithLastFrame(VideoClip clip, bool captureLastFrame)
+        private IEnumerator PlayVideoWithLastFrame(bool captureLastFrame)
+        {
+            string filename = captureLastFrame ? currentTransition.entryVideoFileName : currentTransition.exitVideoFileName;
+            if (string.IsNullOrEmpty(filename)) yield break;
+            
+            string url = Application.streamingAssetsPath + "/Videos/" + filename;
+            yield return PlayVideoFromURL(url, captureLastFrame);
+        }
+
+        private IEnumerator PlayVideoFromURL(string url, bool captureLastFrame)
         {
             transitionCanvas.gameObject.SetActive(true);
             videoDisplay.gameObject.SetActive(true);
             videoDisplay.transform.SetAsLastSibling();
-            videoDisplay.color = Color.white;
-
+            
+            videoDisplay.color = new Color(1, 1, 1, 1);
+            
             yield return null;
-
-            videoPlayer.clip = clip;
+            
+            videoPlayer.url = url;
             videoPlayer.Prepare();
-
-            while (!videoPlayer.isPrepared)
+            
+            Debug.Log($"Loading video from: {url}");
+            
+            float timeout = 10f;
+            float timer = 0f;
+            
+            while (!videoPlayer.isPrepared && timer < timeout)
+            {
+                timer += Time.deltaTime;
                 yield return null;
-
+            }
+            
+            if (!videoPlayer.isPrepared)
+            {
+                Debug.LogWarning($"Video failed to load: {url}");
+                videoDisplay.gameObject.SetActive(false);
+                yield break;
+            }
+            
             yield return null;
-
+            
             videoPlayer.Play();
-
+            
             while (videoPlayer.isPlaying)
                 yield return null;
-
+            
             if (captureLastFrame && currentTransition.keepLastFrameForLoading)
             {
                 CaptureLastFrame();
             }
-
+            
             videoDisplay.gameObject.SetActive(false);
         }
 
@@ -258,7 +283,7 @@ namespace Features.Transitions
             RenderTexture.active = videoPlayer.targetTexture;
 
             Texture2D lastFrameTexture2D =
-                new Texture2D(videoPlayer.targetTexture.width, videoPlayer.targetTexture.height);
+                new Texture2D(videoPlayer.targetTexture.width, videoPlayer.targetTexture.height, TextureFormat.ARGB32, false);
             lastFrameTexture2D.ReadPixels(
                 new Rect(0, 0, videoPlayer.targetTexture.width, videoPlayer.targetTexture.height),
                 0, 0);
@@ -312,7 +337,6 @@ namespace Features.Transitions
 
             loadingScreenVisible = true;
         }
-
 
         private IEnumerator ShowLoadingAnimation()
         {
@@ -409,10 +433,13 @@ namespace Features.Transitions
             videoPlayer.renderMode = VideoRenderMode.RenderTexture;
             videoPlayer.SetDirectAudioMute(0, true);
             videoPlayer.waitForFirstFrame = true;
+            videoPlayer.aspectRatio = VideoAspectRatio.NoScaling;
 
             if (videoPlayer.targetTexture == null)
             {
-                RenderTexture rt = new RenderTexture(1920, 1080, 0);
+                RenderTexture rt = new RenderTexture(1920, 1080, 0, RenderTextureFormat.ARGB32);
+                rt.useMipMap = false;
+                rt.autoGenerateMips = false;
                 videoPlayer.targetTexture = rt;
                 videoDisplay.texture = rt;
             }

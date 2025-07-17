@@ -136,5 +136,5 @@ namespace Features.ModularImage
             return image;
         }
     }
-#endif
 }
+#endif
