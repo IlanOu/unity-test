@@ -4,16 +4,20 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "TransitionData", menuName = "Transitions/Transition Data")]
 public class TransitionData : ScriptableObject
 {
-    [Header("Vidéos de transition (dans StreamingAssets/Videos/)")]
-    [Tooltip("Nom du fichier vidéo d'entrée (ex: transition_01_start.webm)")]
-    public string entryVideoFileName;
-    [Tooltip("Nom du fichier vidéo de sortie (ex: transition_01_end.webm)")]
-    public string exitVideoFileName;
+    [Header("Séquences PNG (dans StreamingAssets/Sequences/)")]
+    [Tooltip("Nom du dossier de séquence d'entrée (ex: transition_01_start)")]
+    public string entrySequenceName;
+    [Tooltip("Nom du dossier de séquence de sortie (ex: transition_01_end)")]
+    public string exitSequenceName;
+    
+    [Header("Timing des séquences")]
+    [Range(15f, 120f)]
+    public float frameRate = 30f;
     
     [Header("Audio")]
-    [Tooltip("Son joué au début de la vidéo start")]
+    [Tooltip("Son joué au début de la séquence start")]
     public AudioClip entrySound;
-    [Tooltip("Son joué au début de la vidéo end")]
+    [Tooltip("Son joué au début de la séquence end")]
     public AudioClip exitSound;
     [Range(0f, 1f)]
     public float soundVolume = 1f;
@@ -23,12 +27,6 @@ public class TransitionData : ScriptableObject
 
     [Header("Background Configuration")]
     public Color backgroundColor = Color.black;
-    
-    [Header("Timing Configuration")]
-    [Range(0f, 5f)]
-    public float minTransitionDuration = 1f;
-    [Range(0f, 10f)]
-    public float maxTransitionDuration = 3f;
     
     [Header("Loading Screen Timing")]
     [Range(0f, 10f)]
@@ -41,7 +39,7 @@ public class TransitionData : ScriptableObject
     public bool useLoadingBarExitAnimation = true;
 
     [Header("Advanced")]
-    [Tooltip("Utilise la dernière frame de la vidéo start comme background au lieu de la couleur")]
+    [Tooltip("Utilise la dernière frame de la séquence start comme background du loading")]
     public bool keepLastFrameForLoading = false;
 
     private void OnValidate()

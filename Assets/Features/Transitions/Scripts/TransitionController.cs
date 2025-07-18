@@ -4,145 +4,333 @@ using Features.LoadingBar;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using UnityEngine.Video;
 
 namespace Features.Transitions
 {
     public class TransitionController : MonoBehaviour
     {
-        [Header("Configuration")] [SerializeField]
-        private TransitionConfig transitionConfig;
+        [Header("Configuration")]
+        [SerializeField] private TransitionConfig transitionConfig;
 
-        [Header("UI Elements")] [SerializeField]
-        private Canvas transitionCanvas;
+        [Header("UI Elements")]
+        [SerializeField] private Canvas transitionCanvas;
 
         [SerializeField] private Image backgroundPanel;
-        [SerializeField] private VideoPlayer videoPlayer;
-        [SerializeField] private RawImage videoDisplay;
+        [SerializeField] private Image sequenceDisplay;
 
-        [Header("Audio")] [SerializeField] private AudioSource audioSource;
+        [Header("Audio (optionnel)")]
+        [SerializeField] private AudioSource audioSource;
 
-        [Header("Loading Bar")] [SerializeField]
-        private MonoBehaviour loadingBarComponent;
+        [Header("Loading Bar")]
+        [SerializeField] private MonoBehaviour loadingBarComponent;
 
         private ILoadingBar loadingBar;
-
         private TransitionData currentTransition;
         private bool loadingScreenVisible = false;
+        private SequencePlayer sequencePlayer;
+        private Coroutine loadingDelayCoroutine;
 
         private void Awake()
         {
+            InitializeComponents();
+        }
+
+        private void InitializeComponents()
+        {
             loadingBar = loadingBarComponent as ILoadingBar;
-            if (loadingBar == null && loadingBarComponent != null)
-            {
-                Debug.LogError("Loading bar component doesn't implement ILoadingBar interface!");
-            }
 
             if (audioSource == null)
             {
-                audioSource = gameObject.AddComponent<AudioSource>();
+                audioSource = GetComponent<AudioSource>();
+                if (audioSource == null)
+                {
+                    audioSource = gameObject.AddComponent<AudioSource>();
+                }
                 audioSource.playOnAwake = false;
             }
+
+            sequencePlayer = GetComponent<SequencePlayer>(); // Changé ici
+            if (sequencePlayer == null)
+                sequencePlayer = gameObject.AddComponent<SequencePlayer>(); // Et ici
         }
 
         private void OnValidate()
         {
             if (transitionConfig == null)
                 Debug.LogWarning("TransitionConfig is not assigned!");
-
-            if (videoPlayer == null)
-                Debug.LogWarning("VideoPlayer is not assigned!");
-
+            if (sequenceDisplay == null)
+                Debug.LogWarning("SequenceDisplay is not assigned!");
             if (transitionCanvas == null)
                 Debug.LogWarning("TransitionCanvas is not assigned!");
         }
 
         private void OnDestroy()
         {
-            if (videoPlayer?.targetTexture != null)
-            {
-                videoPlayer.targetTexture.Release();
-                Destroy(videoPlayer.targetTexture);
-            }
-
-            if (backgroundPanel != null && backgroundPanel.sprite != null &&
-                backgroundPanel.sprite.name.Contains("LastFrame"))
-            {
-                Destroy(backgroundPanel.sprite.texture);
-                Destroy(backgroundPanel.sprite);
-            }
+            CleanupLastFrame();
         }
 
+        #region Public API
+
+        /// <summary>
+        /// Transition complète : entrée + chargement + sortie
+        /// </summary>
         public IEnumerator ExecuteTransition(string targetSceneName)
         {
+            if (!ValidateSetup()) yield break;
+
             InitializeUI();
-            SetupVideoPlayer();
+            SelectRandomTransition();
 
-            transitionCanvas.gameObject.SetActive(true);
-            yield return null;
+            yield return PlayEntrySequence();
+            yield return LoadingPhase(targetSceneName);
+            yield return PlayExitSequence();
+            yield return Cleanup();
+        }
 
+        /// <summary>
+        /// Transition de sortie avec chargement (pour TransitionManager)
+        /// </summary>
+        public IEnumerator ExecuteExitSequenceOnly(string targetSceneName)
+        {
+            if (!ValidateSetup()) yield break;
+
+            InitializeUI();
+            SelectRandomTransition();
+
+            yield return LoadingPhase(targetSceneName);
+            yield return PlayExitSequence();
+            yield return Cleanup();
+        }
+
+        /// <summary>
+        /// Animation de sortie avec chargement synchrone, en utilisant une transition spécifique
+        /// </summary>
+        public IEnumerator PlayExitTransitionToScene(string targetSceneName, TransitionData specificTransition = null, System.Action onTransitionStart = null)
+        {
+            Debug.Log("=== PlayExitTransitionToScene START ===");
+
+            if (!ValidateSetup())
+            {
+                Debug.LogError("Setup validation failed!");
+                SceneManager.LoadScene(targetSceneName);
+                yield break;
+            }
+
+            Debug.Log("Setup validation passed");
+
+            // Utiliser la transition spécifiée ou une aléatoire
+            if (specificTransition != null)
+            {
+                currentTransition = specificTransition;
+                Debug.Log($"Using specific transition: {specificTransition.name}");
+            }
+            else
+            {
+                SelectRandomTransition();
+                Debug.Log($"Using random transition: {currentTransition?.name}");
+            }
+
+            if (currentTransition == null)
+            {
+                Debug.LogError("No transition available!");
+                SceneManager.LoadScene(targetSceneName);
+                yield break;
+            }
+
+            Debug.Log($"Selected transition: {currentTransition.name}");
+            Debug.Log($"Exit sequence: {currentTransition.exitSequenceName}");
+            Debug.Log($"Frame rate: {currentTransition.frameRate}");
+
+            Debug.Log("Calling InitializeComponents...");
+            InitializeComponents();
+            Debug.Log("InitializeComponents completed");
+
+            Debug.Log("Calling ActivateTransitionCanvas...");
+            ActivateTransitionCanvas();
+            Debug.Log("ActivateTransitionCanvas completed");
+
+            Debug.Log("Calling onTransitionStart callback...");
+            onTransitionStart?.Invoke();
+            Debug.Log("onTransitionStart callback completed");
+
+            // Démarrer le chargement de la scène en arrière-plan AVANT l'animation
+            Debug.Log($"Starting to load scene: {targetSceneName}");
+            var sceneLoadOperation = SceneManager.LoadSceneAsync(targetSceneName);
+            sceneLoadOperation.allowSceneActivation = false;
+            Debug.Log("Scene loading started");
+
+            // Jouer l'animation de sortie pendant que la scène charge
+            Debug.Log("Starting PlayExitSequenceStandalone...");
+            yield return PlayExitSequenceStandalone();
+            Debug.Log("PlayExitSequenceStandalone completed");
+
+            // S'assurer que la scène est complètement chargée avant de l'activer
+            Debug.Log("Waiting for scene to load...");
+            yield return new WaitUntil(() => sceneLoadOperation.progress >= 0.9f);
+
+            Debug.Log("Scene loaded, activating...");
+            sceneLoadOperation.allowSceneActivation = true;
+            yield return sceneLoadOperation;
+
+            Debug.Log($"Scene {targetSceneName} loaded and activated successfully");
+            Debug.Log("=== PlayExitTransitionToScene END ===");
+        }
+
+        /// <summary>
+        /// Initialise pour utilisation externe (dans LoadingScene)
+        /// </summary>
+        public void InitializeForExternalUse()
+        {
+            if (transitionConfig == null)
+            {
+                Debug.LogError("TransitionConfig not assigned!");
+                return;
+            }
+
+            SelectRandomTransition();
+            InitializeComponents();
+        }
+
+        /// <summary>
+        /// Retourne une transition spécifique par nom
+        /// </summary>
+        public TransitionData GetTransitionByName(string transitionName)
+        {
+            if (transitionConfig == null || transitionConfig.availableTransitions == null)
+                return null;
+
+            foreach (var transition in transitionConfig.availableTransitions)
+            {
+                if (transition != null && transition.name == transitionName)
+                    return transition;
+            }
+
+            Debug.LogWarning($"Transition '{transitionName}' not found in config");
+            return null;
+        }
+
+        /// <summary>
+        /// Retourne toutes les transitions disponibles
+        /// </summary>
+        public TransitionData[] GetAvailableTransitions()
+        {
+            return transitionConfig?.availableTransitions ?? new TransitionData[0];
+        }
+
+        #endregion
+
+        #region Core Transition Logic
+
+        private void SelectRandomTransition()
+        {
             currentTransition = transitionConfig.GetRandomTransition();
             if (currentTransition == null)
             {
                 Debug.LogError("No transition data available!");
-                yield return Cleanup();
+            }
+        }
+
+        private IEnumerator PlayEntrySequence()
+        {
+            if (string.IsNullOrEmpty(currentTransition.entrySequenceName))
+            {
+                ShowLoadingScreen();
                 yield break;
             }
 
-            yield return PlayEntryVideoWithLoading();
-
-            yield return LoadingPhase(targetSceneName);
-
-            yield return PlayExitVideoWithLoading();
-
-            yield return Cleanup();
-        }
-
-        private void InitializeUI()
-        {
-            transitionCanvas.sortingOrder = 1000;
-            transitionCanvas.gameObject.SetActive(true);
-
-            videoDisplay.gameObject.SetActive(false);
-            backgroundPanel.gameObject.SetActive(false);
-            if (loadingBarComponent != null)
-                loadingBarComponent.gameObject.SetActive(false);
-
-            loadingScreenVisible = false;
-        }
-
-        private IEnumerator PlayEntryVideoWithLoading()
-        {
-            if (string.IsNullOrEmpty(currentTransition.entryVideoFileName)) yield break;
-
-            transitionCanvas.gameObject.SetActive(true);
-            yield return null;
-            
             PlayTransitionSound(currentTransition.entrySound);
-            
-            var videoCoroutine = StartCoroutine(PlayVideoWithLastFrame(true));
-            var loadingTimerCoroutine = StartCoroutine(ShowLoadingAfterDelay(currentTransition.showLoadingDelay));
-            
-            yield return videoCoroutine;
-            
-            if (loadingTimerCoroutine != null)
-                StopCoroutine(loadingTimerCoroutine);
-            
+            loadingDelayCoroutine = StartCoroutine(ShowLoadingAfterDelay(currentTransition.showLoadingDelay));
+
+            yield return sequencePlayer.PlaySequence(
+            currentTransition.entrySequenceName,
+            currentTransition.frameRate,
+            sequenceDisplay,
+            currentTransition.keepLastFrameForLoading ? CaptureLastFrame : null);
+
+            StopLoadingDelayCoroutine();
             if (!loadingScreenVisible)
-            {
                 ShowLoadingScreen();
-            }
         }
 
-        private IEnumerator ShowLoadingAfterDelay(float delay)
+        private IEnumerator PlayExitSequence()
         {
-            yield return new WaitForSeconds(delay);
-
-            if (!loadingScreenVisible)
+            if (string.IsNullOrEmpty(currentTransition.exitSequenceName))
             {
-                ShowLoadingScreen();
+                HideLoadingScreen();
+                yield break;
             }
+
+            PlayTransitionSound(currentTransition.exitSound);
+
+            float sequenceDuration = GetSequenceDuration(currentTransition.exitSequenceName);
+            float hideLoadingTime = sequenceDuration - currentTransition.hideLoadingBeforeEnd;
+
+            Coroutine hideLoadingCoroutine = null;
+            if (hideLoadingTime > 0)
+            {
+                hideLoadingCoroutine = StartCoroutine(HideLoadingAfterDelay(hideLoadingTime));
+            }
+            else
+            {
+                HideLoadingScreen();
+            }
+
+            yield return sequencePlayer.PlaySequence(
+            currentTransition.exitSequenceName,
+            currentTransition.frameRate,
+            sequenceDisplay);
+
+            if (hideLoadingCoroutine != null)
+                StopCoroutine(hideLoadingCoroutine);
+
+            if (loadingScreenVisible)
+                HideLoadingScreen();
         }
+
+        private IEnumerator PlayExitSequenceStandalone()
+        {
+            Debug.Log("=== PlayExitSequenceStandalone START ===");
+    
+            if (string.IsNullOrEmpty(currentTransition.exitSequenceName))
+            {
+                Debug.LogWarning("No exit sequence defined");
+                yield return new WaitForSeconds(1f);
+                yield break;
+            }
+
+            Debug.Log($"Playing exit sequence: {currentTransition.exitSequenceName}");
+
+            Debug.Log("Playing transition sound...");
+            PlayTransitionSound(currentTransition.exitSound);
+
+            if (sequenceDisplay != null)
+            {
+                Debug.Log("Activating sequence display");
+                sequenceDisplay.gameObject.SetActive(true);
+                sequenceDisplay.transform.SetAsLastSibling();
+        
+                Debug.Log($"SequenceDisplay active: {sequenceDisplay.gameObject.activeInHierarchy}");
+                Debug.Log($"SequenceDisplay parent: {sequenceDisplay.transform.parent?.name}");
+                Debug.Log($"SequenceDisplay canvas: {sequenceDisplay.GetComponentInParent<Canvas>()?.name}");
+            }
+            else
+            {
+                Debug.LogError("SequenceDisplay is null!");
+                yield break;
+            }
+
+            Debug.Log("Starting sequence playback...");
+            yield return sequencePlayer.PlaySequence(
+            currentTransition.exitSequenceName,
+            currentTransition.frameRate,
+            sequenceDisplay);
+    
+            Debug.Log("=== PlayExitSequenceStandalone END ===");
+        }
+
+        #endregion
+
+        #region Scene Management
 
         private IEnumerator LoadingPhase(string targetSceneName)
         {
@@ -152,14 +340,11 @@ namespace Features.Transitions
             if (loadOperation == null)
             {
                 Debug.LogError($"Failed to load scene: {targetSceneName}");
-                yield return Cleanup();
                 yield break;
             }
 
             loadOperation.allowSceneActivation = false;
-
             yield return ShowLoadingAnimation();
-
             yield return new WaitUntil(() => loadOperation.progress >= 0.9f);
 
             loadOperation.allowSceneActivation = true;
@@ -167,152 +352,87 @@ namespace Features.Transitions
 
             var newScene = SceneManager.GetSceneByName(targetSceneName);
             if (newScene.IsValid())
-            {
                 SceneManager.SetActiveScene(newScene);
-            }
         }
 
-        private IEnumerator PlayExitVideoWithLoading()
+        private IEnumerator UnloadPreviousScenes()
         {
-            if (string.IsNullOrEmpty(currentTransition.exitVideoFileName))
+            List<string> scenesToUnload = new List<string>();
+            string currentSceneName = gameObject.scene.name;
+
+            for (int i = 0; i < SceneManager.sceneCount; i++)
             {
-                HideLoadingScreen();
-                yield break;
+                Scene scene = SceneManager.GetSceneAt(i);
+                if (scene.isLoaded && scene.name != currentSceneName && scene.name != "DontDestroyOnLoad")
+                    scenesToUnload.Add(scene.name);
             }
-            
-            PlayTransitionSound(currentTransition.exitSound);
-            
-            var videoCoroutine = StartCoroutine(PlayVideoWithLastFrame(false));
-            var hideTimerCoroutine = StartCoroutine(HideLoadingAfterDelay(currentTransition.hideLoadingBeforeEnd));
-            
-            yield return videoCoroutine;
-            
-            if (hideTimerCoroutine != null)
-                StopCoroutine(hideTimerCoroutine);
-            
-            if (loadingScreenVisible)
-            {
-                HideLoadingScreen();
-            }
+
+            foreach (string sceneName in scenesToUnload)
+                yield return SceneManager.UnloadSceneAsync(sceneName);
         }
 
-        private void PlayTransitionSound(AudioClip clip)
+        #endregion
+
+        #region UI Management
+
+        private void InitializeUI()
         {
-            if (clip != null && audioSource != null)
-            {
-                audioSource.PlayOneShot(clip, currentTransition.soundVolume);
-            }
+            ActivateTransitionCanvas();
+            ResetUIElements();
         }
 
-        private IEnumerator HideLoadingAfterDelay(float delayFromEnd)
+        private void ActivateTransitionCanvas()
         {
-            float estimatedVideoDuration = 3f;
-            float waitTime = estimatedVideoDuration - delayFromEnd;
-
-            if (waitTime > 0)
+            Debug.Log("=== ActivateTransitionCanvas START ===");
+    
+            if (transitionCanvas != null)
             {
-                yield return new WaitForSeconds(waitTime);
+                transitionCanvas.sortingOrder = 2000;
+                transitionCanvas.gameObject.SetActive(true);
+        
+                Debug.Log($"Transition canvas activated");
+                Debug.Log($"Canvas name: {transitionCanvas.name}");
+                Debug.Log($"Canvas sorting order: {transitionCanvas.sortingOrder}");
+                Debug.Log($"Canvas active: {transitionCanvas.gameObject.activeInHierarchy}");
+                Debug.Log($"Canvas enabled: {transitionCanvas.enabled}");
             }
-
-            if (loadingScreenVisible)
+            else
             {
-                HideLoadingScreen();
+                Debug.LogError("Transition canvas is null!");
             }
+    
+            Debug.Log("=== ActivateTransitionCanvas END ===");
         }
 
-        private IEnumerator PlayVideoWithLastFrame(bool captureLastFrame)
+        private void ResetUIElements()
         {
-            string filename = captureLastFrame ? currentTransition.entryVideoFileName : currentTransition.exitVideoFileName;
-            if (string.IsNullOrEmpty(filename)) yield break;
-            
-            string url = Application.streamingAssetsPath + "/Videos/" + filename;
-            yield return PlayVideoFromURL(url, captureLastFrame);
-        }
+            if (sequenceDisplay != null)
+                sequenceDisplay.gameObject.SetActive(false);
+            if (backgroundPanel != null)
+                backgroundPanel.gameObject.SetActive(false);
+            if (loadingBarComponent != null)
+                loadingBarComponent.gameObject.SetActive(false);
 
-        private IEnumerator PlayVideoFromURL(string url, bool captureLastFrame)
-        {
-            transitionCanvas.gameObject.SetActive(true);
-            videoDisplay.gameObject.SetActive(true);
-            videoDisplay.transform.SetAsLastSibling();
-            
-            videoDisplay.color = new Color(1, 1, 1, 1);
-            
-            yield return null;
-            
-            videoPlayer.url = url;
-            videoPlayer.Prepare();
-            
-            Debug.Log($"Loading video from: {url}");
-            
-            float timeout = 10f;
-            float timer = 0f;
-            
-            while (!videoPlayer.isPrepared && timer < timeout)
-            {
-                timer += Time.deltaTime;
-                yield return null;
-            }
-            
-            if (!videoPlayer.isPrepared)
-            {
-                Debug.LogWarning($"Video failed to load: {url}");
-                videoDisplay.gameObject.SetActive(false);
-                yield break;
-            }
-            
-            yield return null;
-            
-            videoPlayer.Play();
-            
-            while (videoPlayer.isPlaying)
-                yield return null;
-            
-            if (captureLastFrame && currentTransition.keepLastFrameForLoading)
-            {
-                CaptureLastFrame();
-            }
-            
-            videoDisplay.gameObject.SetActive(false);
-        }
-
-        private void CaptureLastFrame()
-        {
-            if (videoPlayer.targetTexture == null) return;
-
-            RenderTexture currentRT = RenderTexture.active;
-            RenderTexture.active = videoPlayer.targetTexture;
-
-            Texture2D lastFrameTexture2D =
-                new Texture2D(videoPlayer.targetTexture.width, videoPlayer.targetTexture.height, TextureFormat.ARGB32, false);
-            lastFrameTexture2D.ReadPixels(
-                new Rect(0, 0, videoPlayer.targetTexture.width, videoPlayer.targetTexture.height),
-                0, 0);
-            lastFrameTexture2D.Apply();
-
-            RenderTexture.active = currentRT;
-
-            Sprite lastFrameSprite = Sprite.Create(lastFrameTexture2D,
-                new Rect(0, 0, lastFrameTexture2D.width, lastFrameTexture2D.height),
-                new Vector2(0.5f, 0.5f));
-
-            if (lastFrameSprite != null)
-            {
-                if (backgroundPanel.sprite != null && backgroundPanel.sprite.name.Contains("LastFrame"))
-                {
-                    Destroy(backgroundPanel.sprite.texture);
-                    Destroy(backgroundPanel.sprite);
-                }
-
-                lastFrameSprite.name = "LastFrame";
-                backgroundPanel.sprite = lastFrameSprite;
-            }
+            loadingScreenVisible = false;
         }
 
         private void ShowLoadingScreen()
         {
             if (loadingScreenVisible) return;
 
-            if (currentTransition.keepLastFrameForLoading && backgroundPanel.sprite != null &&
+            ConfigureBackground();
+            ActivateBackground();
+            ConfigureLoadingBar();
+
+            loadingScreenVisible = true;
+        }
+
+        private void ConfigureBackground()
+        {
+            if (backgroundPanel == null) return;
+
+            if (currentTransition.keepLastFrameForLoading &&
+                backgroundPanel.sprite != null &&
                 backgroundPanel.sprite.name.Contains("LastFrame"))
             {
                 backgroundPanel.color = Color.white;
@@ -322,49 +442,38 @@ namespace Features.Transitions
                 backgroundPanel.sprite = null;
                 backgroundPanel.color = currentTransition.backgroundColor;
             }
+        }
 
-            backgroundPanel.gameObject.SetActive(true);
+        private void ActivateBackground()
+        {
+            if (backgroundPanel != null)
+                backgroundPanel.gameObject.SetActive(true);
+        }
 
-            if (loadingBarComponent != null)
+        private void ConfigureLoadingBar()
+        {
+            if (loadingBarComponent == null) return;
+
+            loadingBarComponent.gameObject.SetActive(true);
+            loadingBarComponent.transform.SetAsLastSibling();
+
+            if (loadingBarComponent is MonoBehaviour loadingBarMono)
             {
-                loadingBarComponent.gameObject.SetActive(true);
-
-                if (!currentTransition.useLoadingBarEntryAnimation)
+                var loadingBarCanvas = loadingBarMono.GetComponent<Canvas>();
+                if (loadingBarCanvas != null && transitionCanvas != null)
                 {
-                    loadingBar?.ShowInstantly();
+                    loadingBarCanvas.sortingOrder = transitionCanvas.sortingOrder + 1;
+                }
+
+                var loadingBarImages = loadingBarMono.GetComponentsInChildren<Image>();
+                foreach (var img in loadingBarImages)
+                {
+                    img.gameObject.SetActive(true);
                 }
             }
 
-            loadingScreenVisible = true;
-        }
-
-        private IEnumerator ShowLoadingAnimation()
-        {
-            if (loadingBar == null)
-            {
-                float duration = transitionConfig.ShouldUseLongLoading()
-                    ? transitionConfig.longLoadingDuration
-                    : Random.Range(0.1f, 0.3f);
-
-                yield return new WaitForSeconds(duration);
-                yield break;
-            }
-
-            bool animationComplete = false;
-
-            float loadingDuration = transitionConfig.ShouldUseLongLoading()
-                ? transitionConfig.longLoadingDuration
-                : Random.Range(0.1f, 0.3f);
-
-            loadingBar.StartLoading(
-                loadingDuration,
-                currentTransition.loadingBarProfile,
-                currentTransition.useLoadingBarEntryAnimation,
-                currentTransition.useLoadingBarExitAnimation,
-                () => { animationComplete = true; }
-            );
-
-            yield return new WaitUntil(() => animationComplete);
+            if (!currentTransition.useLoadingBarEntryAnimation)
+                loadingBar?.ShowInstantly();
         }
 
         private void HideLoadingScreen()
@@ -374,27 +483,133 @@ namespace Features.Transitions
             if (loadingBarComponent != null)
             {
                 if (!currentTransition.useLoadingBarExitAnimation)
-                {
                     loadingBar?.HideInstantly();
-                }
-
                 loadingBarComponent.gameObject.SetActive(false);
             }
 
-            backgroundPanel.gameObject.SetActive(false);
+            if (backgroundPanel != null)
+                backgroundPanel.gameObject.SetActive(false);
+
             loadingScreenVisible = false;
         }
 
-        private IEnumerator Cleanup()
-        {
-            HideLoadingScreen();
+        #endregion
 
-            if (backgroundPanel.sprite != null && backgroundPanel.sprite.name.Contains("LastFrame"))
+        #region Helper Methods
+
+        private bool ValidateSetup()
+        {
+            if (transitionConfig == null)
+            {
+                Debug.LogError("TransitionConfig not assigned!");
+                return false;
+            }
+            return true;
+        }
+
+        private float GetSequenceDuration(string sequenceName)
+        {
+            try
+            {
+                string sequencePath = System.IO.Path.Combine(Application.streamingAssetsPath, "Sequences", sequenceName, "frames");
+                if (System.IO.Directory.Exists(sequencePath))
+                {
+                    string[] pngFiles = System.IO.Directory.GetFiles(sequencePath, "*.png");
+                    return pngFiles.Length / currentTransition.frameRate;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"Could not calculate sequence duration for {sequenceName}: {e.Message}");
+            }
+            return 3f;
+        }
+
+        private void PlayTransitionSound(AudioClip clip)
+        {
+            if (clip != null && audioSource != null)
+                audioSource.PlayOneShot(clip, currentTransition.soundVolume);
+        }
+
+        private void CaptureLastFrame()
+        {
+            if (sequenceDisplay?.sprite?.texture == null) return;
+
+            var lastFrameTexture = sequenceDisplay.sprite.texture;
+            var copyTexture = new Texture2D(lastFrameTexture.width, lastFrameTexture.height, lastFrameTexture.format, false);
+            copyTexture.SetPixels(lastFrameTexture.GetPixels());
+            copyTexture.Apply();
+
+            var lastFrameSprite = Sprite.Create(copyTexture,
+            new Rect(0, 0, copyTexture.width, copyTexture.height),
+            new Vector2(0.5f, 0.5f));
+
+            lastFrameSprite.name = "LastFrame";
+
+            CleanupLastFrame();
+            if (backgroundPanel != null)
+                backgroundPanel.sprite = lastFrameSprite;
+        }
+
+        private void CleanupLastFrame()
+        {
+            if (backgroundPanel?.sprite != null && backgroundPanel.sprite.name.Contains("LastFrame"))
             {
                 Destroy(backgroundPanel.sprite.texture);
                 Destroy(backgroundPanel.sprite);
                 backgroundPanel.sprite = null;
             }
+        }
+
+        private void StopLoadingDelayCoroutine()
+        {
+            if (loadingDelayCoroutine != null)
+            {
+                StopCoroutine(loadingDelayCoroutine);
+                loadingDelayCoroutine = null;
+            }
+        }
+
+        private IEnumerator ShowLoadingAfterDelay(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            if (!loadingScreenVisible)
+                ShowLoadingScreen();
+            loadingDelayCoroutine = null;
+        }
+
+        private IEnumerator HideLoadingAfterDelay(float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            if (loadingScreenVisible)
+                HideLoadingScreen();
+        }
+
+        private IEnumerator ShowLoadingAnimation()
+        {
+            if (loadingBar == null)
+            {
+                float duration = transitionConfig.ShouldUseLongLoading() ? transitionConfig.longLoadingDuration : Random.Range(0.1f, 0.3f);
+                yield return new WaitForSeconds(duration);
+                yield break;
+            }
+
+            bool animationComplete = false;
+            float loadingDuration = transitionConfig.ShouldUseLongLoading() ? transitionConfig.longLoadingDuration : Random.Range(0.1f, 0.3f);
+
+            loadingBar.StartLoading(loadingDuration,
+            currentTransition.loadingBarProfile,
+            currentTransition.useLoadingBarEntryAnimation,
+            currentTransition.useLoadingBarExitAnimation,
+            () => { animationComplete = true; });
+
+            yield return new WaitUntil(() => animationComplete);
+        }
+
+        private IEnumerator Cleanup()
+        {
+            HideLoadingScreen();
+            CleanupLastFrame();
 
             if (transitionCanvas != null)
                 transitionCanvas.gameObject.SetActive(false);
@@ -402,47 +617,58 @@ namespace Features.Transitions
             yield return SceneManager.UnloadSceneAsync(gameObject.scene);
         }
 
-        private IEnumerator UnloadPreviousScenes()
+        #endregion
+        
+        /// <summary>
+        /// Sélectionne une transition selon des critères spécifiques
+        /// Peut être étendu pour inclure de la logique métier
+        /// </summary>
+        public TransitionData SelectTransitionForContext(string context = "default")
         {
-            List<string> scenesToUnload = new List<string>();
-            string transitionSceneName = gameObject.scene.name;
+            if (transitionConfig == null || transitionConfig.availableTransitions == null)
+                return null;
 
-            for (int i = 0; i < SceneManager.sceneCount; i++)
+            switch (context.ToLower())
             {
-                Scene scene = SceneManager.GetSceneAt(i);
-                if (scene.isLoaded &&
-                    scene.name != transitionSceneName &&
-                    scene.name != "DontDestroyOnLoad")
-                {
-                    scenesToUnload.Add(scene.name);
-                }
-            }
-
-            foreach (string sceneName in scenesToUnload)
-            {
-                yield return SceneManager.UnloadSceneAsync(sceneName);
+                case "initial":
+                case "startup":
+                    // Logique pour la transition initiale
+                    return SelectInitialTransition();
+            
+                case "menu":
+                    // Logique pour les transitions de menu
+                    return SelectMenuTransition();
+            
+                case "gameplay":
+                    // Logique pour les transitions de gameplay
+                    return SelectGameplayTransition();
+            
+                default:
+                    // Transition aléatoire par défaut
+                    return transitionConfig.GetRandomTransition();
             }
         }
 
-        private void SetupVideoPlayer()
+        private TransitionData SelectInitialTransition()
         {
-            if (videoPlayer == null) return;
+            // Exemple : utiliser la première transition disponible pour le démarrage
+            var transitions = transitionConfig.availableTransitions;
+            return transitions.Length > 0 ? transitions[0] : null;
+        }
 
-            videoPlayer.playOnAwake = false;
-            videoPlayer.isLooping = false;
-            videoPlayer.renderMode = VideoRenderMode.RenderTexture;
-            videoPlayer.SetDirectAudioMute(0, true);
-            videoPlayer.waitForFirstFrame = true;
-            videoPlayer.aspectRatio = VideoAspectRatio.NoScaling;
+        private TransitionData SelectMenuTransition()
+        {
+            // Exemple : filtrer les transitions appropriées pour les menus
+            var transitions = transitionConfig.availableTransitions;
+            // Ici on pourrait filtrer par tags, noms, ou autres critères
+            return transitions.Length > 0 ? transitions[Random.Range(0, transitions.Length)] : null;
+        }
 
-            if (videoPlayer.targetTexture == null)
-            {
-                RenderTexture rt = new RenderTexture(1920, 1080, 0, RenderTextureFormat.ARGB32);
-                rt.useMipMap = false;
-                rt.autoGenerateMips = false;
-                videoPlayer.targetTexture = rt;
-                videoDisplay.texture = rt;
-            }
+        private TransitionData SelectGameplayTransition()
+        {
+            // Exemple : logique pour les transitions de gameplay
+            var transitions = transitionConfig.availableTransitions;
+            return transitions.Length > 0 ? transitions[Random.Range(0, transitions.Length)] : null;
         }
     }
 }

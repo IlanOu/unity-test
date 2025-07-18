@@ -27,10 +27,11 @@ namespace Features.LoadingBar
         private Sequence loadingSequence;
         private float currentProgress = 0f;
         private AudioSource audioSource;
+        private bool isRealProgress = false;
+        private LoadingAnimationProfile currentProfile;
 
         private void Awake()
         {
-            // Crée un AudioSource si nécessaire
             audioSource = GetComponent<AudioSource>();
             if (audioSource == null && HasAnySounds())
             {
@@ -40,7 +41,7 @@ namespace Features.LoadingBar
         }
 
         /// <summary>
-        /// Starts the loading animation
+        /// Starts the loading animation with fake timing
         /// </summary>
         public void StartLoading(float duration, LoadingAnimationProfile profile, Action onComplete)
         {
@@ -48,9 +49,59 @@ namespace Features.LoadingBar
         }
 
         /// <summary>
-        /// Starts the loading animation
+        /// Starts the loading animation with fake timing
         /// </summary>
         public void StartLoading(float duration, LoadingAnimationProfile profile, bool useEntryAnimation, bool useExitAnimation, Action onComplete)
+        {
+            StartLoadingInternal(duration, profile, useEntryAnimation, useExitAnimation, false, onComplete);
+        }
+
+        /// <summary>
+        /// Starts the loading animation with real progress tracking
+        /// </summary>
+        public void StartRealProgressLoading(LoadingAnimationProfile profile, bool useEntryAnimation, bool useExitAnimation, Action onComplete)
+        {
+            StartLoadingInternal(0f, profile, useEntryAnimation, useExitAnimation, true, onComplete);
+        }
+
+        /// <summary>
+        /// Updates the real progress (0 to 1)
+        /// </summary>
+        public void UpdateRealProgress(float progress)
+        {
+            if (!isRealProgress) return;
+            
+            progress = Mathf.Clamp01(progress);
+            currentProgress = progress;
+            UpdateVisuals(currentProgress, currentProfile);
+        }
+
+        /// <summary>
+        /// Completes the real progress loading
+        /// </summary>
+        public void CompleteRealProgress()
+        {
+            if (!isRealProgress) return;
+            
+            currentProgress = 1f;
+            UpdateVisuals(currentProgress, currentProfile);
+            
+            // Jouer l'animation de succès et de sortie
+            if (loadingSequence != null && loadingSequence.IsActive()) 
+                loadingSequence.Kill();
+                
+            loadingSequence = DOTween.Sequence();
+            
+            if (currentProfile.useSuccessAnimation)
+            {
+                loadingSequence.Append(CreateSuccessAnimation(currentProfile));
+            }
+            
+            loadingSequence.AppendInterval(currentProfile.completeHoldDuration);
+            loadingSequence.Append(CreateExitAnimation(currentProfile));
+        }
+
+        private void StartLoadingInternal(float duration, LoadingAnimationProfile profile, bool useEntryAnimation, bool useExitAnimation, bool realProgress, Action onComplete)
         {
             if (profile == null)
             {
@@ -62,6 +113,8 @@ namespace Features.LoadingBar
                 loadingSequence.Kill();
         
             currentProgress = 0f;
+            isRealProgress = realProgress;
+            currentProfile = profile;
         
             if (useEntryAnimation)
             {
@@ -81,26 +134,33 @@ namespace Features.LoadingBar
                 loadingSequence.Append(CreateEntryAnimation(profile));
             }
         
-            loadingSequence.Append(CreateProgressAnimation(duration, profile));
-        
-            if (profile.useSuccessAnimation)
+            if (!realProgress)
             {
-                loadingSequence.Append(CreateSuccessAnimation(profile));
+                // Mode fake : animation automatique
+                loadingSequence.Append(CreateProgressAnimation(duration, profile));
+                
+                if (profile.useSuccessAnimation)
+                {
+                    loadingSequence.Append(CreateSuccessAnimation(profile));
+                }
+                
+                loadingSequence.AppendInterval(profile.completeHoldDuration);
+                
+                if (useExitAnimation)
+                {
+                    loadingSequence.Append(CreateExitAnimation(profile));
+                }
+                
+                loadingSequence.OnComplete(() => onComplete?.Invoke());
             }
-        
-            loadingSequence.AppendInterval(profile.completeHoldDuration);
-        
-            if (useExitAnimation)
+            else
             {
-                loadingSequence.Append(CreateExitAnimation(profile));
+                // Mode réel : on attend les updates manuelles
+                UpdateVisuals(0f, profile);
+                loadingSequence.OnComplete(() => onComplete?.Invoke());
             }
-        
-            loadingSequence.OnComplete(() => onComplete?.Invoke());
         }
 
-        /// <summary>
-        /// Instantly shows the loading bar
-        /// </summary>
         public void ShowInstantly()
         {
             if (loadingSequence != null && loadingSequence.IsActive()) 
@@ -114,9 +174,6 @@ namespace Features.LoadingBar
             UpdateVisuals(0f, null);
         }
 
-        /// <summary>
-        /// Instantly hides the loading bar
-        /// </summary>
         public void HideInstantly()
         {
             if (loadingSequence != null && loadingSequence.IsActive()) 
@@ -127,9 +184,6 @@ namespace Features.LoadingBar
             canvasGroup.blocksRaycasts = false;
         }
 
-        /// <summary>
-        /// Hides the loading bar
-        /// </summary>
         public void Hide()
         {
             loadingSequence?.Kill();
@@ -137,9 +191,6 @@ namespace Features.LoadingBar
             gameObject.SetActive(false);
         }
 
-        /// <summary>
-        /// Creates the entry animation
-        /// </summary>
         private Tween CreateEntryAnimation(LoadingAnimationProfile profile)
         {
             PlaySound(entrySound);
@@ -150,9 +201,6 @@ namespace Features.LoadingBar
             return seq;
         }
 
-        /// <summary>
-        /// Creates the progress animation
-        /// </summary>
         private Tween CreateProgressAnimation(float duration, LoadingAnimationProfile profile)
         {
             PlaySound(progressSound);
@@ -162,9 +210,6 @@ namespace Features.LoadingBar
                 .OnUpdate(() => UpdateVisuals(currentProgress, profile));
         }
         
-        /// <summary>
-        /// Creates the success animation
-        /// </summary>
         private Tween CreateSuccessAnimation(LoadingAnimationProfile profile)
         {
             float soundDelay = profile.successPunchDuration * 0.5f;
@@ -173,9 +218,6 @@ namespace Features.LoadingBar
             return containerTransform.DOPunchScale(Vector3.one * profile.successPunchScale, profile.successPunchDuration);
         }
     
-        /// <summary>
-        /// Creates the exit animation
-        /// </summary>
         private Tween CreateExitAnimation(LoadingAnimationProfile profile)
         {
             PlaySound(exitSound);
@@ -186,9 +228,6 @@ namespace Features.LoadingBar
             return seq;
         }
 
-        /// <summary>
-        /// Updates the visuals of the loading bar
-        /// </summary>
         private void UpdateVisuals(float progress, LoadingAnimationProfile profile)
         {
             if (progressBar != null) progressBar.value = progress;
@@ -196,9 +235,6 @@ namespace Features.LoadingBar
             if (fillImage != null && profile?.progressGradient != null) fillImage.color = profile.progressGradient.Evaluate(progress);
         }
 
-        /// <summary>
-        /// Plays a sound if available
-        /// </summary>
         private void PlaySound(AudioClip clip)
         {
             if (clip != null && audioSource != null)
@@ -207,9 +243,6 @@ namespace Features.LoadingBar
             }
         }
 
-        /// <summary>
-        /// Checks if any sounds are assigned
-        /// </summary>
         private bool HasAnySounds()
         {
             return entrySound != null || progressSound != null || successSound != null || exitSound != null;

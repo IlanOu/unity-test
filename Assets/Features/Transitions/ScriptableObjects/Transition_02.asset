@@ -12,15 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a22a51a3e79a02b448079127dbf7575d, type: 3}
   m_Name: Transition_02
   m_EditorClassIdentifier: 
-  entryVideoFileName: Transition_02_start_transparent.webm
-  exitVideoFileName: Transition_02_end_transparent.webm
+  entrySequenceName: Transition_02_start_transparent
+  exitSequenceName: Transition_02_end_transparent
+  frameRate: 30
   entrySound: {fileID: 8300000, guid: 1c2073270e5a61c4f9ea86284ecc2b66, type: 3}
   exitSound: {fileID: 8300000, guid: df67b2e19725e2d44aed8af0501850f8, type: 3}
   soundVolume: 1
   loadingBarProfile: {fileID: 11400000, guid: d6e5fdcd260c92041830473fa42e6112, type: 2}
   backgroundColor: {r: 0.9960785, g: 0.28627452, b: 0.7607844, a: 1}
-  minTransitionDuration: 1
-  maxTransitionDuration: 3
   showLoadingDelay: 2
   hideLoadingBeforeEnd: 2
   useLoadingBarEntryAnimation: 1

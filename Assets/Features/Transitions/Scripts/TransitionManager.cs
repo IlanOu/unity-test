@@ -7,6 +7,7 @@ namespace Features.Transitions
     public class TransitionManager : MonoBehaviour
     {
         private static TransitionManager _instance;
+        private bool _isTransitioning = false;
 
         public static TransitionManager Instance
         {
@@ -16,12 +17,9 @@ namespace Features.Transitions
                 {
                     CreateInstance();
                 }
-
                 return _instance;
             }
         }
-
-        private bool _isTransitioning = false;
 
         private static void CreateInstance()
         {
@@ -63,12 +61,12 @@ namespace Features.Transitions
         {
             _isTransitioning = true;
 
+            // Charger TransitionScene
             var transitionLoadOp = SceneManager.LoadSceneAsync("TransitionScene", LoadSceneMode.Additive);
             yield return transitionLoadOp;
+            yield return null; // Frame pour l'initialisation
 
-            yield return null;
-            yield return null;
-
+            // Trouver et exécuter la transition
             var transitionController = FindObjectOfType<TransitionController>();
             if (transitionController == null)
             {
@@ -78,7 +76,6 @@ namespace Features.Transitions
             }
 
             yield return transitionController.ExecuteTransition(targetSceneName);
-
             _isTransitioning = false;
         }
     }
