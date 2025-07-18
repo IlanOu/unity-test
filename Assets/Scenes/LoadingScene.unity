@@ -226,7 +226,7 @@ MonoBehaviour:
   loadingBar: {fileID: 617069194}
   statusText: {fileID: 1482373947}
   loadingProfile: {fileID: 11400000, guid: d6e5fdcd260c92041830473fa42e6112, type: 2}
-  mainCanvasGroup: {fileID: 2042798278}
+  mainCanvasGroup: {fileID: 617069196}
   transitionController: {fileID: 2042798273}
   specificTransitionForLoading: {fileID: 11400000, guid: f76a77981de1eb341a78e4aedff7757c, type: 2}
   nextSceneName: Scene1

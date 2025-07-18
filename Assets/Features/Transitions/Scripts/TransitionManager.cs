@@ -13,10 +13,7 @@ namespace Features.Transitions
         {
             get
             {
-                if (_instance == null)
-                {
-                    CreateInstance();
-                }
+                if (_instance == null) CreateInstance();
                 return _instance;
             }
         }
@@ -35,22 +32,15 @@ namespace Features.Transitions
                 Destroy(gameObject);
                 return;
             }
-
             _instance = this;
             DontDestroyOnLoad(gameObject);
         }
 
         public static void TransitionToScene(string targetSceneName)
         {
-            if (Instance._isTransitioning)
+            if (Instance._isTransitioning || string.IsNullOrEmpty(targetSceneName))
             {
-                Debug.LogWarning("Transition already in progress!");
-                return;
-            }
-
-            if (string.IsNullOrEmpty(targetSceneName))
-            {
-                Debug.LogError("Target scene name cannot be null or empty!");
+                Debug.LogWarning("Transition already in progress or invalid scene name!");
                 return;
             }
 
@@ -61,21 +51,20 @@ namespace Features.Transitions
         {
             _isTransitioning = true;
 
-            // Charger TransitionScene
             var transitionLoadOp = SceneManager.LoadSceneAsync("TransitionScene", LoadSceneMode.Additive);
             yield return transitionLoadOp;
-            yield return null; // Frame pour l'initialisation
+            yield return null;
 
-            // Trouver et exécuter la transition
-            var transitionController = FindObjectOfType<TransitionController>();
-            if (transitionController == null)
+            var controller = FindObjectOfType<TransitionController>();
+            if (controller != null)
             {
-                Debug.LogError("TransitionController not found in TransitionScene!");
-                _isTransitioning = false;
-                yield break;
+                yield return controller.ExecuteTransition(targetSceneName);
+            }
+            else
+            {
+                Debug.LogError("TransitionController not found!");
             }
 
-            yield return transitionController.ExecuteTransition(targetSceneName);
             _isTransitioning = false;
         }
     }
