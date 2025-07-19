@@ -23,5 +23,5 @@ MonoBehaviour:
   showLoadingDelay: 2
   hideLoadingBeforeEnd: 2
   useLoadingBarEntryAnimation: 1
-  useLoadingBarExitAnimation: 1
+  useLoadingBarExitAnimation: 0
   keepLastFrameForLoading: 0

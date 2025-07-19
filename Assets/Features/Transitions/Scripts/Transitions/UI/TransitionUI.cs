@@ -163,7 +163,7 @@ namespace Features.Transitions.UI
 
             if (transitionData == null || string.IsNullOrEmpty(transitionData.exitSequenceName))
             {
-                HideExternalLoadingCanvas();
+                HideExternalLoadingCanvas(transitionData);
                 yield return new WaitForSeconds(1f);
                 yield break;
             }
@@ -174,7 +174,11 @@ namespace Features.Transitions.UI
             if (sequenceDisplay != null)
             {
                 sequenceDisplay.gameObject.SetActive(true);
-                sequenceDisplay.transform.SetAsLastSibling();
+                if (!transitionData.useLoadingBarExitAnimation)
+                {
+                    backgroundPanel.gameObject.SetActive(false);
+                    loadingBarComponent.gameObject.SetActive(false);
+                }
             }
 
             float sequenceDuration =
@@ -184,76 +188,53 @@ namespace Features.Transitions.UI
             Debug.Log($"Sequence duration: {sequenceDuration}s, will hide external canvas at: {hideTime}s");
 
             Coroutine sequenceCoroutine = null;
+            
+            Coroutine loadingDelayCoroutine = null;
+            if (hideTime > 0)
+            {
+                loadingDelayCoroutine = StartCoroutine(HideLoadingScreenAfterDelay(hideTime, transitionData));
+            }
+            // HideLoadingScreen(transitionData);
+            
+            
             if (sequencePlayer != null)
             {
-                sequenceCoroutine = StartCoroutine(sequencePlayer.PlaySequence(
+                yield return sequencePlayer.PlaySequence(
                     transitionData.exitSequenceName,
                     transitionData.frameRate,
-                    sequenceDisplay));
+                    sequenceDisplay);
             }
 
+            if (loadingDelayCoroutine != null)
+            {
+                StopCoroutine(loadingDelayCoroutine);
+            }
+            
             Coroutine hideTimerCoroutine = null;
-            if (transitionData.hideLoadingBeforeEnd > 0 && hideTime > 0 && hideTime < sequenceDuration)
-            {
-                Debug.Log($"Starting timer to hide external canvas in {hideTime}s...");
-                hideTimerCoroutine = StartCoroutine(HideExternalLoadingCanvasAfterDelay(hideTime));
-            }
-
-            if (sequenceCoroutine != null)
-            {
-                yield return sequenceCoroutine;
-            }
             
-            if (hideTimerCoroutine != null)
-            {
-                StopCoroutine(hideTimerCoroutine);
-            }
-            
-            HideExternalLoadingCanvas();
-
             Debug.Log("=== TransitionUI.PlayExitSequence END ===");
         }
         
-        private IEnumerator HideExternalLoadingCanvasAfterDelay(float delay)
-        {
-            Debug.Log($"=== HideExternalLoadingCanvasAfterDelay START - delay: {delay}s ===");
-            Debug.Log($"External canvas: {externalLoadingCanvas?.name}");
-            Debug.Log($"External canvas group: {externalCanvasGroup?.name}");
-
-            yield return new WaitForSeconds(delay);
-
-            Debug.Log($"Timer finished after {delay}s - calling HideExternalLoadingCanvas()");
-            HideExternalLoadingCanvas();
-            Debug.Log("=== HideExternalLoadingCanvasAfterDelay END ===");
-        }
+       
         
-        private void HideExternalLoadingCanvas()
+        private void HideExternalLoadingCanvas(TransitionData transitionData)
         {
-            Debug.Log("=== HideExternalLoadingCanvas START ===");
-            Debug.Log($"External canvas: {externalLoadingCanvas?.name} (enabled: {externalLoadingCanvas?.enabled})");
-            Debug.Log(
-                $"External canvas group: {externalCanvasGroup?.name} (active: {externalCanvasGroup?.gameObject.activeInHierarchy})");
-
             if (externalLoadingCanvas != null && externalLoadingCanvas != transitionCanvas)
             {
                 externalLoadingCanvas.enabled = false;
-                Debug.Log($"External loading canvas '{externalLoadingCanvas.name}' DISABLED by TransitionUI");
             }
             else if (externalCanvasGroup != null)
             {
                 externalCanvasGroup.gameObject.SetActive(false);
-                Debug.Log($"External canvas group '{externalCanvasGroup.name}' DEACTIVATED by TransitionUI");
             }
             else
             {
                 Debug.LogWarning(
                     "No external canvas to hide - both externalLoadingCanvas and externalCanvasGroup are null");
+                HideLoadingScreen(transitionData);
             }
-
-            Debug.Log("=== HideExternalLoadingCanvas END ===");
         }
-
-
+        
         public IEnumerator ShowLoadingBarAnimation(UnityEngine.AsyncOperation loadOperation, float duration,
             TransitionData transitionData)
         {
@@ -301,7 +282,6 @@ namespace Features.Transitions.UI
             if (loadingBarComponent != null)
             {
                 loadingBarComponent.gameObject.SetActive(true);
-                loadingBarComponent.transform.SetAsLastSibling();
 
                 if (loadingBarComponent is MonoBehaviour loadingBarMono)
                 {
@@ -352,7 +332,8 @@ namespace Features.Transitions.UI
         private IEnumerator HideLoadingScreenAfterDelay(float delay, TransitionData transitionData)
         {
             yield return new WaitForSeconds(delay);
-            HideLoadingScreen(transitionData);
+            // HideLoadingScreen(transitionData);
+            HideExternalLoadingCanvas(transitionData);
         }
 
         private void CaptureLastFrame()

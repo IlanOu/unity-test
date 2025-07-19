@@ -65,7 +65,6 @@ namespace Features.Transitions.Sequences
             settings.LogDebug($"Frame duration: {frameDuration}s");
 
             displayImage.gameObject.SetActive(true);
-            displayImage.transform.SetAsLastSibling();
             displayImage.color = Color.white;
 
             settings.LogDebug($"Starting sequence playback: {cachedSequence.Sprites.Length} frames");
@@ -83,6 +82,7 @@ namespace Features.Transitions.Sequences
                     {
                         settings.LogDebug("Last frame with callback, invoking and breaking");
                         onLastFrame.Invoke();
+                        displayImage.gameObject.SetActive(false);
                         yield break;
                     }
 
