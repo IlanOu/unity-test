@@ -131,8 +131,8 @@ GameObject:
   - component: {fileID: 140651885}
   - component: {fileID: 140651886}
   - component: {fileID: 140651883}
-  - component: {fileID: 140651882}
   - component: {fileID: 140651887}
+  - component: {fileID: 140651888}
   m_Layer: 5
   m_Name: Button
   m_TagString: Untagged
@@ -160,20 +160,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 508.4063, y: 113.7276}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &140651882
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 140651880}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: db517bb34aec45bd8aecf719724a06ea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  targetSceneName: Scene2
-  buttonCooldown: 2
 --- !u!114 &140651883
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -289,6 +275,20 @@ MonoBehaviour:
   hoverSound: {fileID: 8300000, guid: ab8eed23d510fc24c86b111623e4b8fd, type: 3}
   clickSound: {fileID: 8300000, guid: bee1f1a5525544d43b4d53a9c395d94d, type: 3}
   soundVolume: 1
+--- !u!114 &140651888
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 140651880}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82897fd1ad4741ad9c1c10504e40cce7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetSceneName: Scene2
+  buttonCooldown: 2
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0

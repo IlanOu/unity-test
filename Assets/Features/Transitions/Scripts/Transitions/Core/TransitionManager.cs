@@ -1,8 +1,9 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Features.Transitions.Core;
 
-namespace Features.Transitions
+namespace Features.Transitions.Core
 {
     public class TransitionManager : MonoBehaviour
     {
@@ -36,18 +37,33 @@ namespace Features.Transitions
             DontDestroyOnLoad(gameObject);
         }
 
-        public static void TransitionToScene(string targetSceneName)
+        public static void TransitionToScene(string targetSceneName, System.Action onFailure = null)
         {
-            if (Instance._isTransitioning || string.IsNullOrEmpty(targetSceneName))
+            if (Instance._isTransitioning)
             {
-                Debug.LogWarning("Transition already in progress or invalid scene name!");
+                Debug.LogWarning("Transition already in progress!");
+                onFailure?.Invoke();
                 return;
             }
 
-            Instance.StartCoroutine(Instance.ExecuteTransition(targetSceneName));
+            if (string.IsNullOrEmpty(targetSceneName))
+            {
+                Debug.LogError("Invalid scene name!");
+                onFailure?.Invoke();
+                return;
+            }
+
+            if (!Utils.SceneHelper.IsSceneValid(targetSceneName))
+            {
+                Debug.LogError($"Scene {targetSceneName} cannot be loaded!");
+                onFailure?.Invoke();
+                return;
+            }
+
+            Instance.StartCoroutine(Instance.ExecuteTransition(targetSceneName, onFailure));
         }
 
-        private IEnumerator ExecuteTransition(string targetSceneName)
+        private IEnumerator ExecuteTransition(string targetSceneName, System.Action onFailure)
         {
             _isTransitioning = true;
 
@@ -63,6 +79,7 @@ namespace Features.Transitions
             else
             {
                 Debug.LogError("TransitionController not found!");
+                onFailure?.Invoke();
             }
 
             _isTransitioning = false;

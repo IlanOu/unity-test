@@ -9,14 +9,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a22a51a3e79a02b448079127dbf7575d, type: 3}
+  m_Script: {fileID: 11500000, guid: 85f09c65b274483b9917e423eb0ecab2, type: 3}
   m_Name: Transition_03
   m_EditorClassIdentifier: 
   entrySequenceName: Transition_03_start_transparent
   exitSequenceName: Transition_03_end_transparent
   frameRate: 30
-  entrySound: {fileID: 8300000, guid: d10488f0ba96fcf498da76c8e5f1a933, type: 3}
-  exitSound: {fileID: 8300000, guid: ccd784e5e90883549bcee708b9691ed7, type: 3}
+  entrySound: {fileID: 8300000, guid: 40a54be57aa0eba40805634cab965cdd, type: 3}
+  exitSound: {fileID: 8300000, guid: c39af81294098b948b4bb28b45f946ca, type: 3}
   soundVolume: 1
   loadingBarProfile: {fileID: 11400000, guid: d6e5fdcd260c92041830473fa42e6112, type: 2}
   backgroundColor: {r: 0, g: 0, b: 0, a: 1}

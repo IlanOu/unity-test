@@ -119,6 +119,56 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &115850551
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 115850552}
+  - component: {fileID: 115850553}
+  m_Layer: 5
+  m_Name: CanvasGroup
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &115850552
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115850551}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 223312502}
+  - {fileID: 7371820818350673634}
+  m_Father: {fileID: 1892366907}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &115850553
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 115850551}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &223312501
 GameObject:
   m_ObjectHideFlags: 0
@@ -144,17 +194,17 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 223312501}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1892366907}
+  m_Father: {fileID: 115850552}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 1920, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &223312503
 MonoBehaviour:
@@ -204,7 +254,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1091583174}
   - component: {fileID: 1091583173}
-  - component: {fileID: 1091583172}
   - component: {fileID: 1091583171}
   m_Layer: 0
   m_Name: Camera
@@ -257,14 +306,6 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
---- !u!81 &1091583172
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1091583170}
-  m_Enabled: 1
 --- !u!20 &1091583173
 Camera:
   m_ObjectHideFlags: 0
@@ -418,8 +459,9 @@ GameObject:
   - component: {fileID: 1892366906}
   - component: {fileID: 1892366905}
   - component: {fileID: 1892366904}
-  - component: {fileID: 1892366908}
   - component: {fileID: 1892366909}
+  - component: {fileID: 1892366911}
+  - component: {fileID: 1892366910}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -502,8 +544,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 223312502}
-  - {fileID: 7371820818350673634}
+  - {fileID: 115850552}
   - {fileID: 1580221849}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -512,24 +553,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &1892366908
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1892366903}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7cf40d82df2a4c8e878a30c912f4bdfa, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  transitionConfig: {fileID: 11400000, guid: 0a84cbe50c6c0c243aa3e2e551b053c4, type: 2}
-  transitionCanvas: {fileID: 1892366906}
-  backgroundPanel: {fileID: 223312503}
-  sequenceDisplay: {fileID: 1580221847}
-  loadingBarComponent: {fileID: 7112999583674550806}
-  audioSource: {fileID: 0}
 --- !u!114 &1892366909
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -547,6 +570,36 @@ MonoBehaviour:
   pointerCursor: {fileID: 2800000, guid: c2613041f5a493b40ab83e164638364d, type: 3}
   pointerHotspot: {x: 14, y: 4}
   fixedCursorSize: {x: 32, y: 32}
+--- !u!114 &1892366910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1892366903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 734a1e7d62164fe8b9de0f81be1e2bad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  transitionCanvas: {fileID: 1892366906}
+  backgroundPanel: {fileID: 223312503}
+  sequenceDisplay: {fileID: 1580221847}
+  loadingBarComponent: {fileID: 7112999583674550806}
+--- !u!114 &1892366911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1892366903}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2fa5a4f381741adb656d4f5f191ba10, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  transitionConfig: {fileID: 11400000, guid: 24d2892bc6269b74895ab34f0d6b8881, type: 2}
+  transitionUI: {fileID: 1892366910}
 --- !u!114 &393442469988492080
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1219,12 +1272,12 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4709285361506480650}
-  m_Father: {fileID: 1892366907}
+  m_Father: {fileID: 115850552}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 1920, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &7423473504673067354
 GameObject:

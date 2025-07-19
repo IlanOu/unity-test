@@ -1,7 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
+using Features.Transitions.Core;
 
-namespace Features.Transitions
+namespace Features.Transitions.UI
 {
     public class TransitionButton : MonoBehaviour
     {
@@ -48,13 +49,20 @@ namespace Features.Transitions
                 return;
             }
 
-            if (button != null) // Désactive le bouton pour éviter le spam
+            if (button != null)
             {
                 button.interactable = false; 
                 Invoke(nameof(ReEnableButton), buttonCooldown);
             }
         
-            TransitionManager.TransitionToScene(targetSceneName);
+            TransitionManager.TransitionToScene(targetSceneName, () => {
+                // En cas d'échec, réactiver le bouton immédiatement
+                if (button != null)
+                {
+                    button.interactable = true;
+                    CancelInvoke(nameof(ReEnableButton));
+                }
+            });
         }
     
         private void ReEnableButton()

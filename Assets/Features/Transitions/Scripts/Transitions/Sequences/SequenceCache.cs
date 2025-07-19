@@ -1,15 +1,18 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
-using System.Collections;
 using System;
+using Features.Transitions.Configuration;
+using Features.Transitions.Utils;
 
-namespace Features.Transitions
+namespace Features.Transitions.Sequences
 {
     public class SequenceCache : MonoBehaviour
     {
         private static SequenceCache _instance;
         private Dictionary<string, CachedSequence> cachedSequences = new Dictionary<string, CachedSequence>();
+        private TransitionSettings settings;
 
         public static SequenceCache Instance
         {
@@ -34,6 +37,13 @@ namespace Features.Transitions
             }
             _instance = this;
             DontDestroyOnLoad(gameObject);
+            
+            InitializeCache();
+        }
+        
+        private void InitializeCache()
+        {
+            settings = new TransitionSettings();
         }
 
         public IEnumerator PreloadAllSequences(Action<float> onProgressUpdate = null, Action<string> onStatusUpdate = null)
@@ -95,7 +105,7 @@ namespace Features.Transitions
         {
             foreach (var sequence in cachedSequences.Values)
             {
-                CleanupSequence(sequence);
+                sequence.Cleanup();
             }
             cachedSequences.Clear();
             Debug.Log("Cache cleared");
@@ -136,18 +146,14 @@ namespace Features.Transitions
             return total;
         }
 
-        private IEnumerator PreloadSequenceInternal(SequenceInfo sequenceInfo, Action<float> onFrameProgress)
+        private IEnumerator PreloadSequenceInternal(SequenceInfo sequenceInfo, System.Action<float> onFrameProgress)
         {
             if (cachedSequences.ContainsKey(sequenceInfo.name))
                 yield break;
 
             System.Array.Sort(sequenceInfo.files);
 
-            var cachedSequence = new CachedSequence
-            {
-                sprites = new Sprite[sequenceInfo.files.Length],
-                textures = new Texture2D[sequenceInfo.files.Length]
-            };
+            var cachedSequence = new CachedSequence(sequenceInfo.name, sequenceInfo.files.Length);
 
             const int batchSize = 2;
             
@@ -160,8 +166,7 @@ namespace Features.Transitions
                     var frameResult = LoadFrame(sequenceInfo.files[j]);
                     if (frameResult.success)
                     {
-                        cachedSequence.sprites[j] = frameResult.sprite;
-                        cachedSequence.textures[j] = frameResult.texture;
+                        cachedSequence.SetFrame(j, frameResult.sprite, frameResult.texture);
                     }
                     
                     onFrameProgress?.Invoke(j / (float)sequenceInfo.files.Length);
@@ -207,18 +212,6 @@ namespace Features.Transitions
             }
         }
 
-        private void CleanupSequence(CachedSequence sequence)
-        {
-            for (int i = 0; i < sequence.sprites.Length; i++)
-            {
-                if (sequence.sprites[i] != null)
-                {
-                    Destroy(sequence.textures[i]);
-                    Destroy(sequence.sprites[i]);
-                }
-            }
-        }
-
         private struct FrameLoadResult
         {
             public bool success;
@@ -232,12 +225,5 @@ namespace Features.Transitions
             public int frameCount;
             public string[] files;
         }
-    }
-
-    [System.Serializable]
-    public class CachedSequence
-    {
-        public Sprite[] sprites;
-        public Texture2D[] textures;
     }
 }

@@ -1,6 +1,7 @@
 using UnityEngine;
+using Features.Transitions.Configuration;
 
-namespace Features.Transitions
+namespace Features.Transitions.Configuration
 {
     [CreateAssetMenu(fileName = "TransitionConfig", menuName = "Transitions/Transition Config")]
     public class TransitionConfig : ScriptableObject
@@ -29,6 +30,9 @@ namespace Features.Transitions
         [Range(0f, 1f)]
         public float longLoadingChance = 0.33f;
         public float longLoadingDuration = 3f;
+        
+        [Header("Settings")]
+        public TransitionSettings settings = new TransitionSettings();
     
         public TransitionData GetRandomTransition()
         {
