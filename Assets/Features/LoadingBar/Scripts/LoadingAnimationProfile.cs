@@ -1,5 +1,6 @@
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Features.LoadingBar
 {
@@ -20,8 +21,8 @@ namespace Features.LoadingBar
         public Gradient progressGradient;
         
         [Header("Success Animation")]
-        public bool useSuccessAnimation = true;
-        public float successPunchScale = 0.2f;
-        public float successPunchDuration = 0.4f;
+        public bool useBounceAnimation = true;
+        public float bounceScale = 0.2f;
+        public float bounceDuration = 0.4f;
     }
 }

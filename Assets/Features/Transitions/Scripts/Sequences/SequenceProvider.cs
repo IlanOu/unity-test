@@ -1,5 +1,3 @@
-// Fichier: Features/Transitions/Sequences/SequenceProvider.cs (Version Finale Sans DLL)
-
 using System;
 using System.Collections;
 using System.Collections.Generic;

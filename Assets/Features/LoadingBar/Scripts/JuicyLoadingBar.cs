@@ -69,7 +69,7 @@ namespace Features.LoadingBar
 
             activeSequence = DOTween.Sequence();
             
-            if (currentProfile.useSuccessAnimation)
+            if (currentProfile.useBounceAnimation)
             {
                 activeSequence.Append(CreateSuccessAnimation(currentProfile));
             }
@@ -132,7 +132,7 @@ namespace Features.LoadingBar
                 // Mode "fake" : l'animation de progression est jouée automatiquement.
                 activeSequence.Append(CreateProgressAnimation(duration, profile));
                 
-                if (profile.useSuccessAnimation)
+                if (profile.useBounceAnimation)
                 {
                     activeSequence.Append(CreateSuccessAnimation(profile));
                 }
@@ -166,8 +166,8 @@ namespace Features.LoadingBar
         
         private Tween CreateSuccessAnimation(LoadingAnimationProfile profile)
         {
-            DOVirtual.DelayedCall(profile.successPunchDuration * 0.5f, () => PlaySound(successSound)).SetUpdate(true);
-            return containerTransform.DOPunchScale(Vector3.one * profile.successPunchScale, profile.successPunchDuration);
+            DOVirtual.DelayedCall(profile.bounceDuration * 0.5f, () => PlaySound(successSound)).SetUpdate(true);
+            return containerTransform.DOPunchScale(Vector3.one * profile.bounceScale, profile.bounceDuration);
         }
     
         private Tween CreateExitAnimation(LoadingAnimationProfile profile)
@@ -195,7 +195,6 @@ namespace Features.LoadingBar
         
         private void OnDestroy()
         {
-            // Tue toute séquence DOTween en cours pour éviter les erreurs à la destruction de l'objet.
             activeSequence.Kill();
         }
     }

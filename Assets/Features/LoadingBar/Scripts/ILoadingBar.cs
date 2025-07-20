@@ -2,9 +2,6 @@ using System;
 
 namespace Features.LoadingBar
 {
-    /// <summary>
-    /// Définit le contrat pour tout composant pouvant agir comme une barre de chargement de transition.
-    /// </summary>
     public interface ILoadingBar
     {
         void StartLoading(float duration, LoadingAnimationProfile profile, Action onComplete);

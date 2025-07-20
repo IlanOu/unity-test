@@ -12,20 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a0ebb112cdf483b9930f7cecbc31565, type: 3}
   m_Name: LoadingAnimationProfile
   m_EditorClassIdentifier: 
-  useEntryAnimation: 1
   entryDuration: 0.5
-  entryScale: 0.8
   entryEase: 27
-  useEntryBounce: 1
-  bounceIntensity: 0.1
-  bounceDuration: 0.3
-  bounceVibrato: 3
+  exitDuration: 0.4
+  exitEase: 26
+  completeHoldDuration: 0.25
   progressEase: 12
-  useRandomVariations: 1
-  variationFrequency: 2
-  minPauseDuration: 0.1
-  maxPauseDuration: 0.3
-  useColorGradient: 1
   progressGradient:
     serializedVersion: 2
     key0: {r: 1, g: 1, b: 1, a: 1}
@@ -56,22 +48,6 @@ MonoBehaviour:
     m_ColorSpace: -1
     m_NumColorKeys: 2
     m_NumAlphaKeys: 2
-  usePulseEffect: 1
-  pulseIntensity: 0.05
-  pulseSpeed: 2
-  useRotationEffect: 0
-  rotationAmount: 360
-  rotationDuration: 2
-  useProgressMilestones: 1
-  milestoneShakeIntensity: 0.1
-  milestoneShakeDuration: 0.2
-  milestoneShakeVibrato: 5
-  useSuccessAnimation: 1
-  successPunchScale: 0.2
-  successPunchDuration: 0.4
-  successPunchVibrato: 3
-  useExitAnimation: 1
-  completeHoldDuration: 0.5
-  exitDuration: 0.4
-  exitScale: 1.2
-  exitEase: 26
+  useBounceAnimation: 1
+  bounceScale: 0.2
+  bounceDuration: 0.3
