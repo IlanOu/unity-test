@@ -4,12 +4,15 @@ using Features.Transitions.Core;
 
 namespace Features.Transitions.UI
 {
+    [RequireComponent(typeof(Button))]
     public class TransitionButton : MonoBehaviour
     {
         [Header("Configuration")]
+        [Tooltip("Le nom exact de la scène à charger.")]
         [SerializeField] private string targetSceneName;
     
-        [Header("Settings")]
+        [Header("Sécurité")]
+        [Tooltip("Temps en secondes avant que le bouton ne soit réactivé après un clic.")]
         [SerializeField] private float buttonCooldown = 2f;
     
         private Button button;
@@ -17,58 +20,45 @@ namespace Features.Transitions.UI
         private void Awake()
         {
             button = GetComponent<Button>();
-            if (button == null)
-            {
-                Debug.LogError("TransitionButton requires a Button component!", this);
-            }
-        }
-
-        private void OnValidate()
-        {
-            if (string.IsNullOrEmpty(targetSceneName))
-            {
-                Debug.LogWarning("Target scene name is not set!", this);
-            }
         }
 
         private void OnEnable()
         {
-            button?.onClick.AddListener(OnButtonClick);
+            button.onClick.AddListener(OnButtonClick);
         }
 
         private void OnDisable()
         {
-            button?.onClick.RemoveListener(OnButtonClick);
+            button.onClick.RemoveListener(OnButtonClick);
         }
     
         private void OnButtonClick()
         {
             if (string.IsNullOrEmpty(targetSceneName))
             {
-                Debug.LogError("Target scene name is not set!", this);
+                Debug.LogError("Target scene name is not set on this button!", this);
                 return;
             }
 
-            if (button != null)
-            {
-                button.interactable = false; 
-                Invoke(nameof(ReEnableButton), buttonCooldown);
-            }
+            // Désactive le bouton pour éviter les clics multiples.
+            button.interactable = false; 
+            Invoke(nameof(ReEnableButton), buttonCooldown);
         
+            // Lance la transition via le manager global.
             TransitionManager.TransitionToScene(targetSceneName, () => {
-                // En cas d'échec, réactiver le bouton immédiatement
-                if (button != null)
-                {
-                    button.interactable = true;
-                    CancelInvoke(nameof(ReEnableButton));
-                }
+                // Ce callback est appelé si la transition échoue, pour réactiver le bouton.
+                ReEnableButton();
             });
         }
     
         private void ReEnableButton()
         {
-            if (button != null)
+            // Annule l'invocation au cas où le callback d'échec l'aurait déjà fait.
+            CancelInvoke(nameof(ReEnableButton));
+            if (this != null && button != null)
+            {
                 button.interactable = true;
+            }
         }
     }
 }

@@ -4,22 +4,32 @@ using UnityEngine.SceneManagement;
 using Features.Transitions.Configuration;
 using Features.Transitions.UI;
 using Features.Transitions.Utils;
+using Features.Transitions.Sequences;
 
 namespace Features.Transitions.Core
 {
+    [RequireComponent(typeof(TransitionUI))]
     public class TransitionController : MonoBehaviour
     {
         [Header("Configuration")]
         [SerializeField] private TransitionConfig transitionConfig;
-
+        
         [Header("Components")]
         [SerializeField] private TransitionUI transitionUI;
 
-        private TransitionData currentTransition;
-
-        private void Awake()
+        private void Start()
         {
             InitializeComponents();
+
+            // S'assure que le fournisseur est prêt à recevoir des demandes de chargement.
+            if(SequenceProvider.Instance != null)
+            {
+                StartCoroutine(SequenceProvider.Instance.Initialize());
+            }
+            else
+            {
+                Debug.LogError("FATAL: SequenceProvider is not available. Ensure it's in the scene and check Script Execution Order.", this);
+            }
         }
 
         private void InitializeComponents()
@@ -27,150 +37,99 @@ namespace Features.Transitions.Core
             if (transitionUI == null)
             {
                 transitionUI = GetComponent<TransitionUI>();
-                if (transitionUI == null)
-                {
-                    transitionUI = gameObject.AddComponent<TransitionUI>();
-                }
             }
-
             AudioHelper.EnsureAudioSource(gameObject);
         }
 
-        #region Public API
-
-        public IEnumerator PlayTransition(AsyncOperation preloadedScene, TransitionData specificTransition = null, System.Action onStart = null)
-        {
-            if (!ValidateSetup()) 
-            {
-                if (preloadedScene != null)
-                {
-                    preloadedScene.allowSceneActivation = true;
-                }
-                yield break;
-            }
-
-            currentTransition = specificTransition ?? transitionConfig.GetRandomTransition();
-            if (currentTransition == null)
-            {
-                Debug.LogError("No transition available!");
-                if (preloadedScene != null)
-                {
-                    preloadedScene.allowSceneActivation = true;
-                }
-                yield break;
-            }
-
-            transitionUI.SetupCanvas();
-            onStart?.Invoke();
-
-            if (preloadedScene != null)
-            {
-                preloadedScene.allowSceneActivation = true;
-                yield return preloadedScene;
-                yield return null;
-            }
-
-            yield return transitionUI.PlayExitSequence(currentTransition);
-        }
-
-        public IEnumerator ExecuteTransition(string targetSceneName)
+        /// <summary>
+        /// Orchestre une transition complète : animation d'entrée, changement de scène, animation de sortie.
+        /// </summary>
+        public IEnumerator ExecuteTransition(string targetSceneName, string sourceSceneName, TransitionData specificTransition = null)
         {
             if (!ValidateSetup()) yield break;
 
-            currentTransition = transitionConfig.GetRandomTransition();
-            if (currentTransition == null) yield break;
+            TransitionData transition = specificTransition ?? transitionConfig.GetRandomTransition();
+            if (transition == null)
+            {
+                Debug.LogError("No TransitionData found. Switching scenes directly.");
+                if(!string.IsNullOrEmpty(sourceSceneName) && SceneManager.GetSceneByName(sourceSceneName).isLoaded) 
+                    yield return SceneManager.UnloadSceneAsync(sourceSceneName);
+                yield return SceneManager.LoadSceneAsync(targetSceneName);
+                yield break;
+            }
 
-            transitionUI.SetupCanvas();
-            yield return transitionUI.PlayEntrySequence(currentTransition);
-            yield return LoadSceneWithLoadingBar(targetSceneName);
-            yield return transitionUI.PlayExitSequence(currentTransition);
-            yield return Cleanup();
-        }
-
-        public IEnumerator PlayExitTransitionOnly(TransitionData specificTransition = null)
-        {
-            if (!ValidateSetup()) yield break;
-
-            currentTransition = specificTransition ?? transitionConfig.GetRandomTransition();
-            if (currentTransition == null) yield break;
-
-            transitionUI.SetupCanvas();
-            yield return transitionUI.PlayExitSequence(currentTransition);
-            yield return Cleanup();
-        }
-
-        public TransitionData SelectTransitionForContext(string context = "default")
-        {
-            if (transitionConfig?.availableTransitions == null) return null;
+            // -- Séquence d'Entrée --
+            if (!string.IsNullOrEmpty(transition.entrySequenceName))
+            {
+                yield return SequenceProvider.Instance.PreloadSequence(transition.entrySequenceName);
+            }
             
-            var transitions = transitionConfig.availableTransitions;
-            return transitions.Length > 0 ? transitions[0] : null;
-        }
+            transitionUI.SetupCanvas();
+            yield return transitionUI.PlayEntrySequence(transition);
 
-        #endregion
-
-        #region Core Logic
-
-        private IEnumerator LoadSceneWithLoadingBar(string targetSceneName)
-        {
-            string[] excludeScenes = { gameObject.scene.name };
-            yield return SceneHelper.UnloadAllScenesExcept(excludeScenes);
-
-            var loadOp = SceneManager.LoadSceneAsync(targetSceneName, LoadSceneMode.Additive);
-            if (loadOp == null)
+            // -- Changement de Scène --
+            yield return LoadAndUnloadScenes(targetSceneName, sourceSceneName, transition);
+            
+            if (!string.IsNullOrEmpty(transition.entrySequenceName))
             {
-                Debug.LogError($"Failed to load scene: {targetSceneName}");
-                yield break;
+                SequenceProvider.Instance.UnloadSequence(transition.entrySequenceName);
             }
+
+            // -- Séquence de Sortie --
+            if (!string.IsNullOrEmpty(transition.exitSequenceName))
+            {
+                yield return SequenceProvider.Instance.PreloadSequence(transition.exitSequenceName);
+            }
+
+            yield return transitionUI.PlayExitSequence(transition);
+
+            if (!string.IsNullOrEmpty(transition.exitSequenceName))
+            {
+                SequenceProvider.Instance.UnloadSequence(transition.exitSequenceName);
+            }
+            
+            // -- Nettoyage Final --
+            if(SceneManager.GetSceneByName("TransitionScene").isLoaded)
+            {
+                yield return SceneManager.UnloadSceneAsync("TransitionScene");
+            }
+        }
+        
+        private IEnumerator LoadAndUnloadScenes(string targetSceneName, string sourceSceneName, TransitionData transition)
+        {
+            // Décharge d'abord l'ancienne scène pour éviter tout conflit.
+            if (!string.IsNullOrEmpty(sourceSceneName) && SceneManager.GetSceneByName(sourceSceneName).isLoaded)
+            {
+                yield return SceneManager.UnloadSceneAsync(sourceSceneName);
+            }
+            
+            yield return Resources.UnloadUnusedAssets();
+
+            // Charge ensuite la nouvelle scène.
+            var loadOp = SceneManager.LoadSceneAsync(targetSceneName, LoadSceneMode.Additive);
             loadOp.allowSceneActivation = false;
 
-            bool useLongLoading = transitionConfig.ShouldUseLongLoading();
-            float loadingDuration = useLongLoading ? 
-                transitionConfig.longLoadingDuration : 
-                UnityEngine.Random.Range(0.5f, 1.5f);
+            float loadingDuration = (transitionConfig != null && transitionConfig.ShouldUseLongLoading()) 
+                ? transitionConfig.longLoadingDuration 
+                : Random.Range(0.5f, 1.5f);
 
-            Debug.Log($"Loading duration: {loadingDuration}s (long: {useLongLoading})");
-
-            yield return transitionUI.ShowLoadingBarAnimation(loadOp, loadingDuration, currentTransition);
-
+            yield return transitionUI.ShowLoadingBarAnimation(loadOp, loadingDuration, transition);
+            
             loadOp.allowSceneActivation = true;
             yield return loadOp;
 
-            SceneHelper.SetActiveScene(targetSceneName);
+            Scene newScene = SceneManager.GetSceneByName(targetSceneName);
+            if (newScene.IsValid())
+            {
+                SceneManager.SetActiveScene(newScene);
+            }
         }
-
-        #endregion
-
-        #region Helper Methods
 
         private bool ValidateSetup()
         {
-            if (transitionConfig == null)
-            {
-                Debug.LogError("TransitionConfig not assigned!");
-                return false;
-            }
-
-            if (transitionUI == null)
-            {
-                Debug.LogError("TransitionUI not found!");
-                return false;
-            }
-
-            return transitionUI.ValidateSetup();
+            if (transitionConfig == null) { Debug.LogError("TransitionConfig not assigned in Inspector!", this); return false; }
+            if (transitionUI == null) { Debug.LogError("TransitionUI not assigned in Inspector!", this); return false; }
+            return true;
         }
-
-        private IEnumerator Cleanup()
-        {
-            transitionUI.Cleanup();
-            
-            string currentSceneName = gameObject.scene.name;
-            if (!string.IsNullOrEmpty(currentSceneName))
-            {
-                yield return SceneManager.UnloadSceneAsync(currentSceneName);
-            }
-        }
-
-        #endregion
     }
 }

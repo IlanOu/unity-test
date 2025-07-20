@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85f09c65b274483b9917e423eb0ecab2, type: 3}
   m_Name: Transition_03
   m_EditorClassIdentifier: 
-  entrySequenceName: Transition_03_start_transparent
-  exitSequenceName: Transition_03_end_transparent
+  entrySequenceName: Transition_03_start
+  exitSequenceName: Transition_03_end
   frameRate: 30
   entrySound: {fileID: 8300000, guid: 40a54be57aa0eba40805634cab965cdd, type: 3}
   exitSound: {fileID: 8300000, guid: c39af81294098b948b4bb28b45f946ca, type: 3}
@@ -25,3 +25,5 @@ MonoBehaviour:
   useLoadingBarEntryAnimation: 0
   useLoadingBarExitAnimation: 1
   keepLastFrameForLoading: 0
+  precalculatedEntryDuration: 0
+  precalculatedExitDuration: 0

@@ -1,12 +1,12 @@
 using System;
 using DG.Tweening;
-using Features.Transitions;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Features.LoadingBar
 {
+    [RequireComponent(typeof(AudioSource))]
     public class JuicyLoadingBar : MonoBehaviour, ILoadingBar
     {
         [Header("UI References")]
@@ -15,196 +15,150 @@ namespace Features.LoadingBar
         [SerializeField] private Slider progressBar;
         [SerializeField] private Image fillImage;
         [SerializeField] private TextMeshProUGUI percentageText;
-        [SerializeField] private Image backgroundImage;
         
         [Header("Audio")]
         [SerializeField] private AudioClip entrySound;
         [SerializeField] private AudioClip progressSound;
         [SerializeField] private AudioClip successSound;
         [SerializeField] private AudioClip exitSound;
+        [Range(0f, 1f)]
         [SerializeField] private float soundVolume = 1f;
     
-        private Sequence loadingSequence;
+        private Sequence activeSequence;
         private float currentProgress = 0f;
         private AudioSource audioSource;
-        private bool isRealProgress = false;
+        private bool isTrackingRealProgress = false;
         private LoadingAnimationProfile currentProfile;
 
         private void Awake()
         {
             audioSource = GetComponent<AudioSource>();
-            if (audioSource == null && HasAnySounds())
-            {
-                audioSource = gameObject.AddComponent<AudioSource>();
-                audioSource.playOnAwake = false;
-            }
+            audioSource.playOnAwake = false;
         }
-
-        /// <summary>
-        /// Starts the loading animation with fake timing
-        /// </summary>
+        
+        // Surcharge pour un appel simple avec des animations par défaut.
         public void StartLoading(float duration, LoadingAnimationProfile profile, Action onComplete)
         {
             StartLoading(duration, profile, true, true, onComplete);
         }
 
-        /// <summary>
-        /// Starts the loading animation with fake timing
-        /// </summary>
         public void StartLoading(float duration, LoadingAnimationProfile profile, bool useEntryAnimation, bool useExitAnimation, Action onComplete)
         {
             StartLoadingInternal(duration, profile, useEntryAnimation, useExitAnimation, false, onComplete);
         }
 
-        /// <summary>
-        /// Starts the loading animation with real progress tracking
-        /// </summary>
         public void StartRealProgressLoading(LoadingAnimationProfile profile, bool useEntryAnimation, bool useExitAnimation, Action onComplete)
         {
             StartLoadingInternal(0f, profile, useEntryAnimation, useExitAnimation, true, onComplete);
         }
-
-        /// <summary>
-        /// Updates the real progress (0 to 1)
-        /// </summary>
+        
         public void UpdateRealProgress(float progress)
         {
-            if (!isRealProgress) return;
-            
-            progress = Mathf.Clamp01(progress);
-            currentProgress = progress;
+            if (!isTrackingRealProgress) return;
+            currentProgress = Mathf.Clamp01(progress);
             UpdateVisuals(currentProgress, currentProfile);
         }
-
-        /// <summary>
-        /// Completes the real progress loading
-        /// </summary>
+        
         public void CompleteRealProgress()
         {
-            if (!isRealProgress) return;
+            if (!isTrackingRealProgress) return;
             
+            activeSequence.Kill();
             currentProgress = 1f;
             UpdateVisuals(currentProgress, currentProfile);
-            
-            // Jouer l'animation de succès et de sortie
-            if (loadingSequence != null && loadingSequence.IsActive()) 
-                loadingSequence.Kill();
-                
-            loadingSequence = DOTween.Sequence();
+
+            activeSequence = DOTween.Sequence();
             
             if (currentProfile.useSuccessAnimation)
             {
-                loadingSequence.Append(CreateSuccessAnimation(currentProfile));
+                activeSequence.Append(CreateSuccessAnimation(currentProfile));
             }
-            
-            loadingSequence.AppendInterval(currentProfile.completeHoldDuration);
-            loadingSequence.Append(CreateExitAnimation(currentProfile));
+            activeSequence.AppendInterval(currentProfile.completeHoldDuration);
+            activeSequence.Append(CreateExitAnimation(currentProfile));
+            activeSequence.SetUpdate(true); // Important pour l'UI
         }
-
-        private void StartLoadingInternal(float duration, LoadingAnimationProfile profile, bool useEntryAnimation, bool useExitAnimation, bool realProgress, Action onComplete)
-        {
-            if (profile == null)
-            {
-                onComplete?.Invoke();
-                return;
-            }
         
-            if (loadingSequence != null && loadingSequence.IsActive()) 
-                loadingSequence.Kill();
-        
-            currentProgress = 0f;
-            isRealProgress = realProgress;
-            currentProfile = profile;
-        
-            if (useEntryAnimation)
-            {
-                canvasGroup.alpha = 0f;
-                containerTransform.localScale = Vector3.zero;
-            }
-            else
-            {
-                canvasGroup.alpha = 1f;
-                containerTransform.localScale = Vector3.one;
-            }
-        
-            loadingSequence = DOTween.Sequence();
-        
-            if (useEntryAnimation)
-            {
-                loadingSequence.Append(CreateEntryAnimation(profile));
-            }
-        
-            if (!realProgress)
-            {
-                // Mode fake : animation automatique
-                loadingSequence.Append(CreateProgressAnimation(duration, profile));
-                
-                if (profile.useSuccessAnimation)
-                {
-                    loadingSequence.Append(CreateSuccessAnimation(profile));
-                }
-                
-                loadingSequence.AppendInterval(profile.completeHoldDuration);
-                
-                if (useExitAnimation)
-                {
-                    loadingSequence.Append(CreateExitAnimation(profile));
-                }
-                
-                loadingSequence.OnComplete(() => onComplete?.Invoke());
-            }
-            else
-            {
-                // Mode réel : on attend les updates manuelles
-                UpdateVisuals(0f, profile);
-                loadingSequence.OnComplete(() => onComplete?.Invoke());
-            }
-        }
-
         public void ShowInstantly()
         {
-            if (loadingSequence != null && loadingSequence.IsActive()) 
-                loadingSequence.Kill();
-        
+            activeSequence.Kill();
             canvasGroup.alpha = 1f;
             containerTransform.localScale = Vector3.one;
-            canvasGroup.interactable = true;
-            canvasGroup.blocksRaycasts = true;
             currentProgress = 0f;
             UpdateVisuals(0f, null);
         }
 
         public void HideInstantly()
         {
-            if (loadingSequence != null && loadingSequence.IsActive()) 
-                loadingSequence.Kill();
-        
+            activeSequence.Kill();
             canvasGroup.alpha = 0f;
-            canvasGroup.interactable = false;
-            canvasGroup.blocksRaycasts = false;
         }
 
         public void Hide()
         {
-            loadingSequence?.Kill();
             HideInstantly();
             gameObject.SetActive(false);
+        }
+        
+        private void StartLoadingInternal(float duration, LoadingAnimationProfile profile, bool useEntryAnimation, bool useExitAnimation, bool realProgress, Action onComplete)
+        {
+            if (profile == null)
+            {
+                Debug.LogWarning("LoadingBar started with a null profile. Completing immediately.", this);
+                onComplete?.Invoke();
+                return;
+            }
+        
+            activeSequence.Kill();
+        
+            currentProgress = 0f;
+            isTrackingRealProgress = realProgress;
+            currentProfile = profile;
+            
+            gameObject.SetActive(true);
+            canvasGroup.alpha = useEntryAnimation ? 0f : 1f;
+            containerTransform.localScale = useEntryAnimation ? Vector3.zero : Vector3.one;
+            
+            activeSequence = DOTween.Sequence();
+            // Assure que les animations de l'UI fonctionnent même si le jeu est en pause (Time.timeScale = 0).
+            activeSequence.SetUpdate(true);
+        
+            if (useEntryAnimation)
+            {
+                activeSequence.Append(CreateEntryAnimation(profile));
+            }
+        
+            if (!realProgress)
+            {
+                // Mode "fake" : l'animation de progression est jouée automatiquement.
+                activeSequence.Append(CreateProgressAnimation(duration, profile));
+                
+                if (profile.useSuccessAnimation)
+                {
+                    activeSequence.Append(CreateSuccessAnimation(profile));
+                }
+                
+                activeSequence.AppendInterval(profile.completeHoldDuration);
+                
+                if (useExitAnimation)
+                {
+                    activeSequence.Append(CreateExitAnimation(profile));
+                }
+            }
+            // Que le mode soit réel ou fake, on appelle onComplete à la fin de la séquence.
+            activeSequence.OnComplete(() => onComplete?.Invoke());
         }
 
         private Tween CreateEntryAnimation(LoadingAnimationProfile profile)
         {
             PlaySound(entrySound);
-            
-            var seq = DOTween.Sequence();
-            seq.Join(canvasGroup.DOFade(1f, profile.entryDuration))
+            return DOTween.Sequence()
+                .Join(canvasGroup.DOFade(1f, profile.entryDuration))
                 .Join(containerTransform.DOScale(1f, profile.entryDuration).SetEase(profile.entryEase));
-            return seq;
         }
 
         private Tween CreateProgressAnimation(float duration, LoadingAnimationProfile profile)
         {
             PlaySound(progressSound);
-            
             return DOTween.To(() => currentProgress, x => currentProgress = x, 1f, duration)
                 .SetEase(profile.progressEase)
                 .OnUpdate(() => UpdateVisuals(currentProgress, profile));
@@ -212,20 +166,16 @@ namespace Features.LoadingBar
         
         private Tween CreateSuccessAnimation(LoadingAnimationProfile profile)
         {
-            float soundDelay = profile.successPunchDuration * 0.5f;
-            DOVirtual.DelayedCall(soundDelay, () => PlaySound(successSound));
-    
+            DOVirtual.DelayedCall(profile.successPunchDuration * 0.5f, () => PlaySound(successSound)).SetUpdate(true);
             return containerTransform.DOPunchScale(Vector3.one * profile.successPunchScale, profile.successPunchDuration);
         }
     
         private Tween CreateExitAnimation(LoadingAnimationProfile profile)
         {
             PlaySound(exitSound);
-            
-            var seq = DOTween.Sequence();
-            seq.Join(canvasGroup.DOFade(0f, profile.exitDuration))
+            return DOTween.Sequence()
+                .Join(canvasGroup.DOFade(0f, profile.exitDuration))
                 .Join(containerTransform.DOScale(0f, profile.exitDuration).SetEase(profile.exitEase));
-            return seq;
         }
 
         private void UpdateVisuals(float progress, LoadingAnimationProfile profile)
@@ -242,15 +192,11 @@ namespace Features.LoadingBar
                 audioSource.PlayOneShot(clip, soundVolume);
             }
         }
-
-        private bool HasAnySounds()
-        {
-            return entrySound != null || progressSound != null || successSound != null || exitSound != null;
-        }
-
+        
         private void OnDestroy()
         {
-            loadingSequence?.Kill();
+            // Tue toute séquence DOTween en cours pour éviter les erreurs à la destruction de l'objet.
+            activeSequence.Kill();
         }
     }
 }

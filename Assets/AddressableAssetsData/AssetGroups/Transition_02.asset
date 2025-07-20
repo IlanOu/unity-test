@@ -1,0 +1,383 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Transition_02
+  m_EditorClassIdentifier: 
+  m_GroupName: Transition_02
+  m_GUID: b48ea4d00dd73974780f06d770b88273
+  m_SerializeEntries:
+  - m_GUID: 088943a7116dc514aa5db98b3b1ea176
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_016.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 0bb89a56fbfa16f4eb9111f7375cab58
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_010.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1887cfac7ba94274d8eb44737360f688
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_016.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1cd62cbc69be5244589af23deac6d32f
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_030.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 1f4e9634c2e0b36459077f14a94ec46e
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_018.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 21cc634ac3aa48e4cb0014d7b8835f4f
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_019.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 23c36a9642d017e4da911a012f816f1e
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_022.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 23fc2d2fe6dd5284784fe11e3a9644c5
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_009.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2682be26cf6bfe64e87c1617daae341b
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_008.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 29de82ccb4152154c8a87cbd6b310cc6
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_029.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2ac57b97bba93cf469e69c7826e778dd
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_006.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 2eabbe7b4aabdb7448f625a637fb245d
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_011.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 3441d35d8a493194a8581328a82bc2c2
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_008.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 41f6b3d1adb0f73469ed927a96386123
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_015.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 430b577ae3593f54bb6108320cf4ddbb
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_022.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4472915130999be4cb6b6a7c14703ad7
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_007.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 458f664759bf626478c6c06ceae5dcdc
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_026.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 49af7f76c5902c94da534562a06f3a48
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_020.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4abf185fbe246c54583328d7af281b2f
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_017.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4b049dc675442004584282b739fcef52
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_026.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4f0dac963ed32c843a46baf1e701c8e1
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_013.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5465c45c57a88ff4ea3ce1fbb0679d11
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_002.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 5c69ae6eb03ba7e48b2d56cba6c7552c
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_005.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 607b339933705f843978fc3c53913305
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_029.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6584dd01bdf4dfe4c8b6462c103019dc
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_004.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 692ceb3d4b678f34c9b616994734b2cd
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_014.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6ef734d3a0159eb4c8806d710dfdbba6
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_021.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 6fc7c285ae91e2a4390c997f4ca1977b
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_027.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7fe4a0339f5c27144865b43406949ee5
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_012.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 883fd3ef496ec864a9a6ca45a6ec5ef0
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_028.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8ae43649fee702146ac65626563233b9
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_006.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8fab263e567747642b778491a3e895e8
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_007.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 93a9a2becb7f56f49b9689cae53d6b42
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_005.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 95aded17db52395499ad2579aab6abda
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_025.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: a6f4096c768fb7542b3b04a8ba352315
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_020.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ab244e27dd4d9ac438fac64ec592c89f
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_018.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b1ced594780ffa841b0b2a29a2b4828b
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_030.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b61c746ff161f4e43b82ba71860b4db8
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_023.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: b7fede0c670e72f4382d7607c3448059
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_009.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: bb9b450a17e67244c89ce5e2c2eed25d
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_019.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c0d6b419b8bd54e4ba426c2793f6138d
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_015.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c3762c139591341429c71be916f6394b
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_011.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c755cef161bd1ed4dbe267c819bcb734
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_004.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c9d5159784b1b36448b19e0752c79fcb
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_021.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ca6c8b14aed5bfd4595d1e3f89146095
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_003.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cd83360a31874a84590c337003c8eaa1
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_023.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ce9dbe3931f065348a139aee6900ec8e
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_024.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: cf8df2c135d69e040b516f4c969e9753
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_025.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d1fb91172e6602c41a3bd69dc553b5a6
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_013.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: d7aee3858ff7c014b99880df1783eaa9
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_027.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: dde003fa04c30a742a97f850ffd93371
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_017.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e7262181c41f87045925840d3b5e7982
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_002.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ee8e30706dce32e4681d7eec1d905f8b
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_014.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: efb611d6053740346b7691031632abfb
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_010.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f065e61accaedb2469cbcc6b26e31fa1
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_001.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f1f1155407b4a014286a19f07a3355e5
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_003.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fa23e8e948ed7e841b93a1b7a42ade11
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_024.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fc617cc5f34cbf94cbfa3ae712271467
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_end_transparent/frames/frame_028.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_end
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: fd87261b3f566064fa07303c6020d324
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_012.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: ff9a000ec0bce3f4e81f03d7754856da
+    m_Address: Assets/Features/Transitions/Images/Sequences/Transition_02_start_transparent/frames/frame_001.png
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Transition_02_start
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 103b235523904484ea618ceaa7992dda, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: ae62251c38e03624cad68774980376b5, type: 2}
+    - {fileID: 11400000, guid: ee7846d9e43305c438130f558bfd2b28, type: 2}

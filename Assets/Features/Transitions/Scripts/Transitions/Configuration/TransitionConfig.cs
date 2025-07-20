@@ -1,5 +1,4 @@
 using UnityEngine;
-using Features.Transitions.Configuration;
 
 namespace Features.Transitions.Configuration
 {
@@ -31,9 +30,6 @@ namespace Features.Transitions.Configuration
         public float longLoadingChance = 0.33f;
         public float longLoadingDuration = 3f;
         
-        [Header("Settings")]
-        public TransitionSettings settings = new TransitionSettings();
-    
         public TransitionData GetRandomTransition()
         {
             if (availableTransitions == null || availableTransitions.Length == 0)

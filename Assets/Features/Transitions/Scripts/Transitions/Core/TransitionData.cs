@@ -1,53 +1,45 @@
-using Features.LoadingBar;
 using UnityEngine;
+using Features.LoadingBar;
 
 namespace Features.Transitions
 {
-    [CreateAssetMenu(fileName = "TransitionData", menuName = "Transitions/Transition Data")]
+    [CreateAssetMenu(fileName = "NewTransitionData", menuName = "Transitions/Transition Data")]
     public class TransitionData : ScriptableObject
     {
-        [Header("Séquences PNG (dans StreamingAssets/Sequences/)")]
-        [Tooltip("Nom du dossier de séquence d'entrée (ex: transition_01_start)")]
+        [Header("Sequence Labels (Addressables)")]
+        [Tooltip("Le label Addressable pour la séquence d'entrée (ex: transition_01_start)")]
         public string entrySequenceName;
-        [Tooltip("Nom du dossier de séquence de sortie (ex: transition_01_end)")]
+        [Tooltip("Le label Addressable pour la séquence de sortie (ex: transition_01_end)")]
         public string exitSequenceName;
         
-        [Header("Timing des séquences")]
-        [Range(15f, 120f)]
+        [Header("Timing")]
+        [Range(1, 120)]
         public float frameRate = 30f;
         
         [Header("Audio")]
-        [Tooltip("Son joué au début de la séquence start")]
         public AudioClip entrySound;
-        [Tooltip("Son joué au début de la séquence end")]
         public AudioClip exitSound;
         [Range(0f, 1f)]
         public float soundVolume = 1f;
         
-        [Header("Loading Bar Style")]
+        [Header("Loading Screen")]
         public LoadingAnimationProfile loadingBarProfile;
-
-        [Header("Background Configuration")]
         public Color backgroundColor = Color.black;
         
-        [Header("Loading Screen Timing")]
-        [Range(0f, 10f)]
-        public float showLoadingDelay = 2f;
-        [Range(0f, 10f)]
-        public float hideLoadingBeforeEnd = 2f;
+        [Tooltip("Délai avant l'apparition de l'écran de chargement (après la fin de la séquence d'entrée).")]
+        [Range(0f, 5f)]
+        public float showLoadingDelay = 0f;
+        
+        [Tooltip("Temps avant la fin de la séquence de sortie où l'écran de chargement disparaît.")]
+        [Range(0f, 5f)]
+        public float hideLoadingBeforeEnd = 0.5f;
 
-        [Header("Loading Bar Animations")]
+        [Header("Animations de la Barre de Chargement")]
         public bool useLoadingBarEntryAnimation = true;
         public bool useLoadingBarExitAnimation = true;
 
-        [Header("Advanced")]
-        [Tooltip("Utilise la dernière frame de la séquence start comme background du loading")]
+        [Header("Fonctionnalités Avancées")]
+        [Tooltip("Si coché, la dernière image de la séquence d'entrée sera utilisée comme fond d'écran pendant le chargement.")]
         public bool keepLastFrameForLoading = false;
-
-        private void OnValidate()
-        {
-            if (loadingBarProfile == null)
-                Debug.LogWarning("LoadingBarProfile is not assigned!", this);
-        }
     }
 }
