@@ -20,10 +20,8 @@ MonoBehaviour:
   soundVolume: 1
   loadingBarProfile: {fileID: 11400000, guid: d6e5fdcd260c92041830473fa42e6112, type: 2}
   backgroundColor: {r: 0, g: 0, b: 0, a: 1}
-  showLoadingDelay: 1.5
+  showLoadingDelay: 1.75
   hideLoadingBeforeEnd: 1
   useLoadingBarEntryAnimation: 0
   useLoadingBarExitAnimation: 1
   keepLastFrameForLoading: 0
-  precalculatedEntryDuration: 0
-  precalculatedExitDuration: 0
